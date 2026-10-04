@@ -27,12 +27,24 @@
     @keyframes blink { 50% { opacity: 0; } }
     /* 头像光晕 */
     .glow { box-shadow: 0 0 0 6px rgba(99,102,241,.15), 0 0 60px rgba(99,102,241,.35); }
+    /* 弹窗入场动画：从小到大浮现 */
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+#notice-modal { animation: fade .2s ease-out; }
+#notice-modal > div { animation: modal-pop .25s ease-out; }
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
   </style>
 </head>
 <body class="bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased transition-colors duration-300">
 
   <!-- ===================== 导航栏 ===================== -->
   <header class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-white/70 dark:bg-slate-950/70 border-b border-slate-200/60 dark:border-slate-800/60">
+   
     <!-- 这是导航栏 -->
     <nav class="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
       <a href="#home" class="font-bold text-lg tracking-tight">大豆包<span class="text-indigo-500">.dev</span></a>
@@ -45,6 +57,9 @@
         <li><a class="hover:text-indigo-500 transition-colors" href="#books">书单</a></li>
         <li><a class="px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors" href="#contact">联系我</a></li>
       </ul>
+
+      <!-- 这是导航栏 -->
+
       <!-- 深色模式按钮 + 移动端菜单按钮 -->
       <div class="flex items-center gap-3">
         <button id="themeBtn" aria-label="切换深色模式" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -68,6 +83,23 @@
     </div>
   </header>
 
+<!-- ===================== 公告模态框 ===================== -->
+  <div id="notice-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div class="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="text-lg font-bold">📢 公告</h3>
+      <button id="notice-close" class="text-xl leading-none text-slate-400 hover:text-slate-600">✕</button>
+    </div>
+    <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+      更新：书单，点一下，公告板块上线啦！站内搜索正在开发中，欢迎围观～
+    </p>
+    <button id="notice-ok" class="mt-5 w-full rounded-full bg-indigo-600 py-2 text-white hover:bg-indigo-500 transition-colors">
+      知道了
+    </button>
+  </div>      
+</div>        
+    </button>
+
   <!-- ===================== Hero 首屏 ===================== -->
   <section id="home" class="min-h-screen flex items-center pt-16">
     <!-- 这是首屏区 -->
@@ -88,7 +120,7 @@
         </div>
         <!-- 社交链接 -->
         <div class="flex gap-5 mt-10 text-slate-500">
-          <a href="https://github.com/yourname" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="GitHub">
+          <a href="https://github.com/zITX63" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="GitHub">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.04.77 2.1v3.12c0 .3.21.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
           </a>
           <a href="https://twitter.com/yourname" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="Twitter / X">
@@ -162,7 +194,7 @@
 
   <!-- ===================== 经历时间线 ===================== -->
   <section id="timeline" class="py-24">
-    <!-- 这是经理时间线区 -->
+    <!-- 这是经历时间线区 -->
     <div class="max-w-3xl mx-auto px-6">
       <h2 class="reveal text-3xl font-bold mb-3">我的经历</h2>
       <p class="reveal text-indigo-500 font-medium mb-10">Experience</p>
@@ -229,7 +261,7 @@
           <div class="flex items-center justify-between gap-4">
             <div>
               <h3 class="font-bold group-hover:text-indigo-500 transition-colors">鲁滨逊漂流记</h3>
-              <p class="text-sm text-slate-500 mt-1">讲述了鲁滨逊在荒岛上生存的故事。</p>
+              <p class="text-sm text-slate-500 mt-1">讲述了荒岛生存，人类韧性的赞歌。</p>
             </div>
             <span class="text-xs text-slate-400 shrink-0">丹尼尔·笛福</span>
           </div>
@@ -250,6 +282,15 @@
               <p class="text-sm text-slate-500 mt-1">讲述了几个美国人逃离荒岛后，在神秘岛上展开冒险的故事。</p>
             </div>
             <span class="text-xs text-slate-400 shrink-0">儒勒·凡尔纳</span>
+          </div>
+        </a>
+        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">易经杂说</h3>
+              <p class="text-sm text-slate-500 mt-1">中国传统文化的巅峰之一，对《易经》的解读和思考。</p>
+            </div>
+            <span class="text-xs text-slate-400 shrink-0">南怀瑾</span>
           </div>
         </a>
       </div>
@@ -444,5 +485,26 @@ msgInput.addEventListener('keydown', function (e) {
   }
 });
     </script>
+
+<!-- ===================== 公告板 ===================== -->
+    <script>
+      const noticeModal = document.querySelector('#notice-modal');
+const noticeClose = document.querySelector('#notice-close');
+const noticeOk = document.querySelector('#notice-ok');
+
+function closeNotice() {
+  noticeModal.classList.add('hidden');
+}
+
+noticeClose.addEventListener('click', closeNotice);
+noticeOk.addEventListener('click', closeNotice);
+noticeModal.addEventListener('click', function (e) {
+  if (e.target === noticeModal) {
+    closeNotice();
+  }
+});
+
+    </script>
+
 </body>
 </html>
