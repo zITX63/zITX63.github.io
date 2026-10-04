@@ -271,6 +271,41 @@
       </a>
     </div>
   </section>
+  
+<!-- ===================== 点击 ===================== -->
+  <section class="py-16 text-center">
+  <button id="magic-btn" class="px-6 py-3 rounded-full bg-emerald-600 text-white font-medium hover:bg-emerald-500 transition-colors">
+    点我试试
+  </button>
+  <p id="magic-text" class="mt-4 text-slate-500">还没有被点过</p>
+</section>
+
+<!-- ===================== 留言板 ===================== -->
+<section class="py-16 text-center">
+  <input id="msg-input" type="text" placeholder="写点什么..." class="px-4 py-2 rounded-lg bg-indigo-600 text-white w-1/2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+  <button id="msg-btn" class="ml-4 px-6 py-2 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-500 transition-colors">
+    发布
+  </button>
+  <ul id="msg-list" class="mt-6 space-y-2 text-left max-w-md mx-auto"></ul>
+
+<script>
+  const btn = document.querySelector('#magic-btn');
+  const text = document.querySelector('#magic-text');
+  let count = 0;
+
+  btn.addEventListener('click', function () {
+  count += 1;
+  if (count >= 5) {
+    btn.classList.remove('bg-emerald-600');
+    btn.classList.add('bg-red-600');
+    text.textContent = '⚠️ 警告：你已经点了 ' + count + ' 次！';
+  } else {
+    text.textContent = '你已经点了 ' + count + ' 次';
+  }
+});
+</script>
+
+
 
   <!-- ===================== 页脚 ===================== -->
   <footer class="border-t border-slate-200 dark:border-slate-800 py-8">
@@ -381,5 +416,33 @@
     });
     toTop.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
   </script>
+
+  <!-- ===================== 留言板 ===================== -->
+  <script>
+      const msgInput = document.querySelector('#msg-input');
+const msgBtn = document.querySelector('#msg-btn');
+const msgList = document.querySelector('#msg-list');
+
+msgBtn.addEventListener('click', function () {
+  const text = msgInput.value;
+
+  if (text === '') {
+    msgInput.placeholder = '先写点什么再发布！';
+    return;
+  }
+
+  const li = document.createElement('li');
+  li.textContent = text;
+  msgList.appendChild(li);
+
+  msgInput.value = '';
+});
+
+msgInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    msgBtn.click();
+  }
+});
+    </script>
 </body>
 </html>
