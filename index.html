@@ -3,10 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>我的第一个网站</title>
-  <meta name="description" content="大豆包 —— 个人网页 / 独立开发者 / 终身学习者" />
+  <title>大豆包的个人主页</title>
+  <meta name="description" content="大豆包 —— 个人网页新人 / 游戏爱好者 / 终身学习者" />
   <!-- TailwindCSS CDN（开发用；生产环境建议构建后引入本地 CSS） -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+ <script>
+    (function () {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark'
+                         : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', dark);
+    })();
+  </script>
+
   <script>
     // Tailwind 深色模式配置：跟随 class="dark"
     tailwind.config = {
@@ -55,6 +65,7 @@
         <li><a class="hover:text-indigo-500 transition-colors" href="#timeline">经历</a></li>
         <li><a class="hover:text-indigo-500 transition-colors" href="#blog">博客</a></li>
         <li><a class="hover:text-indigo-500 transition-colors" href="#books">书单</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#games">游戏</a></li>
         <li><a class="px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors" href="#contact">联系我</a></li>
       </ul>
 
@@ -79,12 +90,13 @@
       <a class="block hover:text-indigo-500" href="#timeline">经历</a>
       <a class="block hover:text-indigo-500" href="#blog">博客</a>
       <a class="block hover:text-indigo-500" href="#books">书单</a>
+      <a class="block hover:text-indigo-500" href="#games">游戏</a>
       <a class="block text-indigo-500" href="#contact">联系我 →</a>
     </div>
   </header>
 
 <!-- ===================== 公告模态框 ===================== -->
-  <div id="notice-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div id="notice-modal" class="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
   <div class="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
     <div class="flex items-start justify-between gap-4">
       <h3 class="text-lg font-bold">📢 公告</h3>
@@ -97,8 +109,7 @@
       知道了
     </button>
   </div>      
-</div>        
-    </button>
+</div>
 
   <!-- ===================== Hero 首屏 ===================== -->
   <section id="home" class="min-h-screen flex items-center pt-16">
@@ -111,7 +122,7 @@
           <span id="typed"></span><span class="cursor-blink text-indigo-500"></span>
         </h2>
         <p class="leading-relaxed text-slate-600 dark:text-slate-400 mb-8 max-w-md">
-          一名大学生，新人前端爱好者，希望学习更多IT知识技能。
+          一名大学生，新人前端爱好者，学习使用AI进行制作网站，希望学习更多IT知识技能。
           白天上课，晚上学习，兴趣是研究一些奇怪的东西，相信技术可以让生活更美好。
         </p>
         <div class="flex flex-wrap gap-4">
@@ -120,7 +131,7 @@
         </div>
         <!-- 社交链接 -->
         <div class="flex gap-5 mt-10 text-slate-500">
-          <a href="https://github.com/zITX63" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="GitHub">
+          <a href="https://github.com/" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="GitHub">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.04.77 2.1v3.12c0 .3.21.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
           </a>
           <a href="https://twitter.com/yourname" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="Twitter / X">
@@ -149,16 +160,16 @@
       <p class="reveal text-indigo-500 font-medium mb-10">About Me</p>
       <div class="grid md:grid-cols-3 gap-6">
         <div class="reveal md:col-span-2 leading-loose text-slate-600 dark:text-slate-400">
-          <p>我是一名拥有<strong class="text-slate-800 dark:text-slate-200">九年义务教育</strong>大学生，目前专注于学习和探索专业知识。</p>
+          <p>我是一名拥有<strong class="text-slate-800 dark:text-slate-200">完整九年义务教育经历的</strong>大学生，目前专注于学习和探索专业知识。</p>
           <ul>
             <li>热爱跑步慢跑，偶尔打篮球，喜欢滑雪（玩过一次）。</li>
-            <li>minecraft10年老兵,喜爱单机游戏:Resident Evil,Street Fighter 6,Metor123。</li>
-            <li>多人合作游戏：双影奇境（单机/主机类）</li>
+            <li>minecraft10年老兵,喜爱单机游戏:Resident-Evil 2-9,Street Fighter 6,Metor123。</li>
+            <li>多人合作游戏（单机/主机类）：双影奇境。</li>
             <li>喜欢绘画（非专业）</li>
             <li>喜欢自然风景,更喜欢安静的地方。</li>
           </ul>
           <!-- 我的爱好清单 -->
-          <p class="mt-4">学习之外，我喜欢跑步,游戏,电脑,发呆。我相信持续学习是最好的投资，这个网站就是记录我成长的地方。</p>
+          <p class="mt-4">学习之外，我喜欢跑步,游戏,电脑,听音乐,发呆。我相信持续学习是最好的投资，这个网站就是记录我成长的地方。</p>
         </div>
         <div class="reveal grid grid-cols-2 md:grid-cols-1 gap-4 text-center">
           <div class="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
@@ -176,7 +187,7 @@
   <section id="skills" class="py-24">
     <!-- 这是技能区 -->
     <div class="max-w-5xl mx-auto px-6">
-      <h2 class="reveal text-3xl font-bold mb-3">技能栈（假的别信）</h2>
+      <h2 class="reveal text-3xl font-bold mb-3">技能栈（还没学）</h2>
       <p class="reveal text-indigo-500 font-medium mb-10">Skills</p>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" id="skillGrid"><!-- JS 渲染 --></div>
     </div>
@@ -297,6 +308,53 @@
     </div>
   </section>
 
+   <!-- ===================== 游戏 ===================== -->
+   <section id="games" class="py-24 bg-slate-50 dark:bg-slate-900/50">
+    <!-- 这是游戏区 -->
+    <div class="max-w-5xl mx-auto px-6">
+      <h2 class="reveal text-3xl font-bold mb-3">我的游戏</h2>
+      <p class="reveal text-indigo-500 font-medium mb-10">Game List</p>
+      <div class="space-y-4">
+        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Resident Evil</h3>
+              <p class="text-sm text-slate-500 mt-1">一款经典的生存恐怖游戏系列。</p>
+            </div>
+            <span class="text-xs text-slate-400 shrink-0">2-4re/5.6/7.8.9</span>
+          </div>
+        </a>
+        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Street Fighter6</h3>
+              <p class="text-sm text-slate-500 mt-1">Capcom一款经典的格斗游戏系列。</p>
+            </div>
+            <span class="text-xs text-slate-400 shrink-0">主玩角色：Cammy</span>
+          </div>
+        </a>
+        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Metro</h3>
+              <p class="text-sm text-slate-500 mt-1">一款俄式末日废土风格的游戏。</p>
+            </div>
+            <span class="text-xs text-slate-400 shrink-0">正传三部曲-主角：阿尔乔姆</span>
+          </div>
+        </a>
+        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Minecraft</h3>
+              <p class="text-sm text-slate-500 mt-1">一款沙盒建造游戏，玩家可以在三维空间中自由地创造和破坏不同种类的方块。</p>
+            </div>
+            <span class="text-xs text-slate-400 shrink-0">真正的自由世界</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== 联系我 ===================== -->
   <section id="contact" class="py-24">
     <!-- 这是联系我区 -->
@@ -322,13 +380,20 @@
 </section>
 
 <!-- ===================== 留言板 ===================== -->
-<section class="py-16 text-center">
-  <input id="msg-input" type="text" placeholder="写点什么..." class="px-4 py-2 rounded-lg bg-indigo-600 text-white w-1/2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-  <button id="msg-btn" class="ml-4 px-6 py-2 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-500 transition-colors">
-    发布
-  </button>
-  <ul id="msg-list" class="mt-6 space-y-2 text-left max-w-md mx-auto"></ul>
-
+<section class="py-16" aria-labelledby="msg-title">
+    <div class="max-w-md mx-auto px-6">
+      <h2 id="msg-title" class="text-xl font-bold mb-1 text-center">留言板</h2>
+      <p class="text-center text-sm text-slate-400 mb-5">留言只保存在你自己的浏览器里，不会上传</p>
+      <div class="flex gap-2">
+        <input id="msg-input" type="text" maxlength="100" placeholder="写点什么…" aria-label="留言内容"
+               class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+        <button id="msg-btn" class="px-5 py-2 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-500 transition-colors">发布</button>
+      </div>
+      <!-- [升级 25] 输入框不再染成深蓝底 + 白字（对比度过低），改成正常边框样式 -->
+      <ul id="msg-list" class="mt-6 space-y-2"></ul>
+      <p id="msg-empty" class="mt-4 text-sm text-slate-400 text-center">还没有留言，写下第一条吧</p>
+    </div>
+  </section>
 <script>
   const btn = document.querySelector('#magic-btn');
   const text = document.querySelector('#magic-text');
@@ -353,7 +418,7 @@
     <!-- 这是页脚区 -->
     <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
       <p>© 2026 大豆包 · 保留所有权利</p>
-      <p>用 <span class="text-red-500">♥</span> 和 TailwindCSS 构建 · 托管于 Vercel</p>
+      <p>用 <span class="text-red-500">♥</span>创造大豆包</p>
     </div>
   </footer>
 
@@ -400,14 +465,14 @@
 
     /* ---------- 4. 技能数据渲染（改成你自己的技能即可） ---------- */
     const skills = [
-      { name: 'HTML / CSS', level: 95, icon: '🎨' },
-      { name: 'JavaScript', level: 92, icon: '⚡' },
-      { name: 'React / Vue', level: 88, icon: '⚛️' },
-      { name: 'Node.js', level: 75, icon: '🟢' },
-      { name: 'TailwindCSS', level: 90, icon: '💨' },
-      { name: 'TypeScript', level: 85, icon: '🔷' },
-      { name: 'Git / CI-CD', level: 80, icon: '🔧' },
-      { name: 'UI 设计', level: 65, icon: '🖌️' },
+      { name: 'HTML / CSS', level: 35, icon: '🎨' },
+      { name: 'JavaScript', level: 20, icon: '⚡' },
+      { name: 'React / Vue', level: 5, icon: '⚛️' },
+      { name: 'Node.js', level: 5, icon: '🟢' },
+      { name: 'TailwindCSS', level: 5, icon: '💨' },
+      { name: 'TypeScript', level: 5, icon: '🔷' },
+      { name: 'Git / CI-CD', level: 20, icon: '🔧' },
+      { name: 'UI 设计', level: 25, icon: '🖌️' },
     ];
     document.getElementById('skillGrid').innerHTML = skills.map(s => `
       <div class="reveal rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
