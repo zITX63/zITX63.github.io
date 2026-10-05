@@ -49,14 +49,6 @@
     }
     #notice-modal { animation: fade .2s ease-out; }
     #notice-modal > div { animation: modal-pop .25s ease-out; }
-    /* 导航滑动指示块：平滑移动 + 激活项文字变白 */
-    #navPill {
-      transition: transform .3s cubic-bezier(.4, 0, .2, 1),
-                  width .3s cubic-bezier(.4, 0, .2, 1),
-                  opacity .2s ease;
-    }
-    #navList .nav-link.active,
-    #navList .nav-link.active:hover { color: #fff; }
   </style>
 </head>
 <body class="bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased transition-colors duration-300">
@@ -67,17 +59,18 @@
     <!-- 这是导航栏 -->
     <nav class="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
       <a href="#home" class="font-bold text-lg tracking-tight">大豆包<span class="text-indigo-500">.dev</span></a>
-      <ul id="navList" class="relative hidden md:flex items-center gap-1 text-sm font-medium">
-        <li id="navPill" aria-hidden="true" class="pointer-events-none absolute left-0 top-0 h-full rounded-full bg-indigo-600 opacity-0"></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#about">关于</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#skills">技能</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#projects">项目</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#timeline">经历</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#blog">博客</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#books">书单</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#games">游戏</a></li>
-        <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#contact">联系我 →</a></li>
+      <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <li><a class="hover:text-indigo-500 transition-colors" href="#about">关于</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#skills">技能</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#projects">项目</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#timeline">经历</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#blog">博客</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#books">书单</a></li>
+        <li><a class="hover:text-indigo-500 transition-colors" href="#games">游戏</a></li>
+        <li><a class="px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors" href="#contact">联系我</a></li>
       </ul>
+
+      <!-- 这是导航栏 -->
 
       <!-- 深色模式按钮 + 移动端菜单按钮 -->
       <div class="flex items-center gap-3">
@@ -104,7 +97,7 @@
   </header>
 
   <!-- ===================== 公告模态框 ===================== -->
-  <div id="notice-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+  <div id="notice-modal" class="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
   <div class="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
     <div class="flex items-start justify-between gap-4">
       <h3 class="text-lg font-bold">📢 公告</h3>
@@ -270,7 +263,7 @@
   </section>
 
   <!-- ===================== 书单 ===================== -->
-   <section id="books" class="py-24">
+   <section id="books" class="py-24 bg-slate-50 dark:bg-slate-900/50">
     <!-- 这是书单区 -->
     <div class="max-w-5xl mx-auto px-6">
       <h2 class="reveal text-3xl font-bold mb-3">我的书单</h2>
@@ -380,7 +373,7 @@
   </section>
 
   <!-- ===================== 点击 ===================== -->
-  <section class="py-16 text-center bg-slate-50 dark:bg-slate-900/50">
+  <section class="py-16 text-center">
     <button id="magic-btn" class="px-6 py-3 rounded-full bg-emerald-600 text-white font-medium hover:bg-emerald-500 transition-colors">
       点我试试
     </button>
@@ -413,7 +406,7 @@
 
   <!-- ===================== 返回顶部 ===================== -->
   <button id="toTop" aria-label="返回顶部"
-    class="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-indigo-600 text-white shadow-lg opacity-0 pointer-events-none transition-all hover:bg-indigo-500">
+    class="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-indigo-600 text-white shadow-lg opacity-0 pointer-events-none transition-all hover:bg-indigo-500">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
   </button>
 
@@ -566,63 +559,9 @@
   }
   noticeClose.addEventListener('click', closeNotice);
   noticeOk.addEventListener('click', closeNotice);
-
-      /* ---------- 11. 导航滑动指示块（点击直达 + 滚动跟随，含防乱跳锁） ---------- */
-  const navList = document.getElementById('navList');
-  const navPill = document.getElementById('navPill');
-  const navLinks = navList.querySelectorAll('.nav-link');
-
-  function movePillTo(link) {
-    if (!link || !link.offsetWidth) return;   // 手机端 ul 隐藏时跳过
-    navPill.style.width = link.offsetWidth + 'px';
-    navPill.style.transform = 'translateX(' + link.offsetLeft + 'px)';
-    navPill.style.opacity = '1';
-    navLinks.forEach(a => a.classList.toggle('active', a === link));
-  }
-
-  /* —— 防乱跳锁 ——
-     点击导航后锁定一段时间，期间滚动侦测不参与，
-     色块直达目标，不会在路过的板块上乱跳 */
-  let navFollowLocked = false;
-  let navUnlockTimer = null;
-
-  function lockNavFollow(ms) {
-    navFollowLocked = true;
-    clearTimeout(navUnlockTimer);
-    navUnlockTimer = setTimeout(() => { navFollowLocked = false; }, ms);
-  }
-
-  // ① 点击导航：先上锁，再让色块直达目标
-  navLinks.forEach(a => {
-    a.addEventListener('click', () => {
-      lockNavFollow(1200);   // 兜底解锁时间；支持 scrollend 的浏览器会更早解锁
-      movePillTo(a);
-    });
+  noticeModal.addEventListener('click', function (e) {
+    if (e.target === noticeModal) closeNotice();
   });
-
-  // ② 滚动跟随：仅在未锁定时生效
-  const navSections = [...navLinks]
-    .map(a => document.querySelector(a.getAttribute('href')))
-    .filter(Boolean);
-  const navSpy = new IntersectionObserver(entries => {
-    if (navFollowLocked) return;   // ← 关键一行：程序滚动期间不跟随
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      movePillTo(navList.querySelector('.nav-link[href="#' + e.target.id + '"]'));
-    });
-  }, { rootMargin: '-40% 0px -55% 0px' });
-  navSections.forEach(s => navSpy.observe(s));
-
-  // 平滑滚动结束时立刻解锁（更跟手）；老浏览器由上面的 1.2 秒兜底
-  if ('onscrollend' in window) {
-    addEventListener('scrollend', () => {
-      navFollowLocked = false;
-      clearTimeout(navUnlockTimer);
-    });
-  }
-
-  // ③ 窗口宽度变化后重新对齐
-  addEventListener('resize', () => movePillTo(navList.querySelector('.nav-link.active')));
   </script>
 
 </body>
