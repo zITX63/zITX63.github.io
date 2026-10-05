@@ -57,6 +57,16 @@
     }
     #navList .nav-link.active,
     #navList .nav-link.active:hover { color: #fff; }
+
+        /* 游戏卡片展开/收缩：0fr=高度0，1fr=内容自然高度 */
+    .game-detail {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .3s ease;
+    }
+    .game-card.open .game-detail { grid-template-rows: 1fr; }
+    .game-detail > div { overflow: hidden; }
+    .game-card.open .game-arrow { transform: rotate(180deg); }
   </style>
 </head>
 <body class="bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased transition-colors duration-300">
@@ -276,91 +286,217 @@
       <h2 class="reveal text-3xl font-bold mb-3">我的书单</h2>
       <p class="reveal text-indigo-500 font-medium mb-10">Reading List</p>
       <div class="space-y-4">
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        <article class="reveal rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">鲁滨逊漂流记</h3>
+              <h3 class="font-bold">鲁滨逊漂流记</h3>
               <p class="text-sm text-slate-500 mt-1">讲述了荒岛生存，人类韧性的赞歌。</p>
             </div>
             <span class="text-xs text-slate-400 shrink-0">丹尼尔·笛福</span>
           </div>
-        </a>
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        </article>
+        <article class="reveal rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">海底两万里</h3>
+              <h3 class="font-bold">海底两万里</h3>
               <p class="text-sm text-slate-500 mt-1">讲述了尼摩船长驾驶鹦鹉螺号潜艇在海中旅行的故事。</p>
             </div>
             <span class="text-xs text-slate-400 shrink-0">儒勒·凡尔纳</span>
           </div>
-        </a>
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        </article>
+        <article class="reveal rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">神秘岛</h3>
+              <h3 class="font-bold">神秘岛</h3>
               <p class="text-sm text-slate-500 mt-1">讲述了几个美国人逃离荒岛后，在神秘岛上展开冒险的故事。</p>
             </div>
             <span class="text-xs text-slate-400 shrink-0">儒勒·凡尔纳</span>
           </div>
-        </a>
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        </article>
+        <article class="reveal rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">易经杂说</h3>
+              <h3 class="font-bold">易经杂说</h3>
               <p class="text-sm text-slate-500 mt-1">中国传统文化的巅峰之一，对《易经》的解读和思考。</p>
             </div>
             <span class="text-xs text-slate-400 shrink-0">南怀瑾</span>
           </div>
-        </a>
+        </article>
       </div>
-    </div>
   </section>
 
-   <!-- ===================== 游戏 ===================== -->
-   <section id="games" class="py-24 bg-slate-50 dark:bg-slate-900/50">
+  <!-- ===================== 游戏 ===================== -->
+  <section id="games" class="py-24 bg-slate-50 dark:bg-slate-900/50">
     <!-- 这是游戏区 -->
     <div class="max-w-5xl mx-auto px-6">
       <h2 class="reveal text-3xl font-bold mb-3">我的游戏</h2>
       <p class="reveal text-indigo-500 font-medium mb-10">Game List</p>
-      <div class="space-y-4">
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Resident Evil</h3>
-              <p class="text-sm text-slate-500 mt-1">一款经典的生存恐怖游戏系列。</p>
+
+  <div class="space-y-4">
+
+    <!-- ===== 游戏 1：Resident Evil ===== -->
+    <article class="reveal game-card rounded-2xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <button class="game-head w-full text-left p-6 flex items-center justify-between gap-4" aria-expanded="false">
+        <div class="flex-1">
+          <h3 class="font-bold">Resident Evil</h3>
+          <p class="text-sm text-slate-500 mt-1">一款经典的生存恐怖游戏系列。</p>
+        </div>
+        <span class="text-xs text-slate-400 shrink-0">2-4re/5.6/7.8.9</span>
+        <svg class="game-arrow w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="game-detail">
+        <div>
+          <div class="px-6 pb-6 -mt-1">
+            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              卡普空的生存恐怖招牌系列。从 1996 年洋馆事件开始，围绕生化病毒、保护伞公司与多代主角展开。
+              系列在"恐怖"与"动作"之间反复摇摆，每一代都是一次方向实验——正因如此，每一代都有忠实拥趸。
+            </p>
+            <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">入坑年份</p>
+                <p class="text-sm font-semibold mt-1">2019</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">最推荐</p>
+                <p class="text-sm font-semibold mt-1">RE2 重制</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">最喜欢的角色</p>
+                <p class="text-sm font-semibold mt-1">里昂</p>
+              </div>
             </div>
-            <span class="text-xs text-slate-400 shrink-0">2-4re/5.6/7.8.9</span>
-          </div>
-        </a>
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Street Fighter6</h3>
-              <p class="text-sm text-slate-500 mt-1">Capcom一款经典的格斗游戏系列。</p>
+            <div class="grid sm:grid-cols-2 gap-3 mt-4">
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 1 · 放张 RE 截图</div>
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 2 · 放张 RE 截图</div>
             </div>
-            <span class="text-xs text-slate-400 shrink-0">主玩角色：Cammy</span>
           </div>
-        </a>
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Metro</h3>
-              <p class="text-sm text-slate-500 mt-1">一款俄式末日废土风格的游戏。</p>
-            </div>
-            <span class="text-xs text-slate-400 shrink-0">正传三部曲-主角：阿尔乔姆</span>
-          </div>
-        </a>
-        <a href="#" class="reveal block group rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <h3 class="font-bold group-hover:text-indigo-500 transition-colors">Minecraft</h3>
-              <p class="text-sm text-slate-500 mt-1">一款沙盒建造游戏，玩家可以在三维空间中自由地创造和破坏不同种类的方块。</p>
-            </div>
-            <span class="text-xs text-slate-400 shrink-0">真正的自由世界</span>
-          </div>
-        </a>
+        </div>
       </div>
-    </div>
+    </article>
+
+    <!-- ===== 游戏 2：Street Fighter 6 ===== -->
+    <article class="reveal game-card rounded-2xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <button class="game-head w-full text-left p-6 flex items-center justify-between gap-4" aria-expanded="false">
+        <div class="flex-1">
+          <h3 class="font-bold">Street Fighter 6</h3>
+          <p class="text-sm text-slate-500 mt-1">Capcom 的经典格斗游戏系列。</p>
+        </div>
+        <span class="text-xs text-slate-400 shrink-0">主玩角色：Cammy</span>
+        <svg class="game-arrow w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="game-detail">
+        <div>
+          <div class="px-6 pb-6 -mt-1">
+            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              格斗游戏正统续作。"现代操作模式"让新手能快速打出一套连招，而 Drive 系统又给高手留足了深度。
+              主玩 Cammy——她的快速接近压制打法最对我的节奏。
+            </p>
+            <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">主玩角色</p>
+                <p class="text-sm font-semibold mt-1">Cammy</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">常用系统</p>
+                <p class="text-sm font-semibold mt-1">Drive Rush</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">练习方式</p>
+                <p class="text-sm font-semibold mt-1">训练模式</p>
+              </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3 mt-4">
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 1 · 放张对战截图</div>
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 2 · 放张角色立绘</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ===== 游戏 3：Metro ===== -->
+    <article class="reveal game-card rounded-2xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <button class="game-head w-full text-left p-6 flex items-center justify-between gap-4" aria-expanded="false">
+        <div class="flex-1">
+          <h3 class="font-bold">Metro</h3>
+          <p class="text-sm text-slate-500 mt-1">一款俄式末日废土风格的游戏。</p>
+        </div>
+        <span class="text-xs text-slate-400 shrink-0">正传三部曲-主角：阿尔乔姆</span>
+        <svg class="game-arrow w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="game-detail">
+        <div>
+          <div class="px-6 pb-6 -mt-1">
+            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              改编自同名小说的末日废土 FPS。核战后的莫斯科，人类残存在地铁隧道里，地表是辐射与变异生物。
+              跟着阿尔乔姆从 2033 一路走到离去——最难忘的始终是第一次踏出隧道、戴上防毒面具看地表的那一刻。
+            </p>
+            <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">三部曲</p>
+                <p class="text-sm font-semibold mt-1">2033 / 最后曙光 / 离去</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">主角</p>
+                <p class="text-sm font-semibold mt-1">阿尔乔姆</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">最难忘</p>
+                <p class="text-sm font-semibold mt-1">首次上地表</p>
+              </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3 mt-4">
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 1 · 放张地铁站截图</div>
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 2 · 放张地表截图</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ===== 游戏 4：Minecraft ===== -->
+    <article class="reveal game-card rounded-2xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <button class="game-head w-full text-left p-6 flex items-center justify-between gap-4" aria-expanded="false">
+        <div class="flex-1">
+          <h3 class="font-bold">Minecraft</h3>
+          <p class="text-sm text-slate-500 mt-1">一款沙盒建造游戏，玩家可以在三维空间中自由地创造和破坏不同种类的方块。</p>
+        </div>
+        <span class="text-xs text-slate-400 shrink-0">真正的自由世界</span>
+        <svg class="game-arrow w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="game-detail">
+        <div>
+          <div class="px-6 pb-6 -mt-1">
+            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              十年老兵。从生存模式的第一个夜晚，到后来的红石机械与大型建筑，它给我的从来不只是游戏——
+              而是一个"想造什么就造什么"的世界。第一次挖到钻石的那个坐标，我到现在还记得。
+            </p>
+            <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">游玩年限</p>
+                <p class="text-sm font-semibold mt-1">10 年</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">最爱模式</p>
+                <p class="text-sm font-semibold mt-1">生存 + 红石</p>
+              </div>
+              <div class="rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3">
+                <p class="text-xs text-slate-400">代表记忆</p>
+                <p class="text-sm font-semibold mt-1">首次挖到钻石</p>
+              </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3 mt-4">
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 1 · 放张建筑截图</div>
+              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 2 · 放张生存截图</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</div>
+
   </section>
 
   <!-- ===================== 联系我 ===================== -->
@@ -533,28 +669,78 @@
   });
   toTop.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
 
-  /* ---------- 9. 留言板 ---------- */
+    /* ---------- 9. 留言板（localStorage 持久化 + 单条删除） ---------- */
   const msgInput = document.querySelector('#msg-input');
   const msgBtn = document.querySelector('#msg-btn');
   const msgList = document.querySelector('#msg-list');
   const msgEmpty = document.querySelector('#msg-empty');
+  const MSG_KEY = 'my-site-messages';        // 浏览器存储用的钥匙名
 
+  // 数据模型：每条留言是一个对象 { text, time }
+  let messages = [];
+  try {
+    messages = JSON.parse(localStorage.getItem(MSG_KEY)) || [];
+  } catch (e) {
+    messages = [];                            // 存储内容损坏时兜底，不让页面崩
+  }
+
+  // 渲染函数：把 messages 数组画成页面上的列表
+  function renderMessages() {
+    msgList.innerHTML = '';                   // 先清空，再按数据重画（避免重复叠加）
+    messages.forEach(function (m, i) {
+      const li = document.createElement('li');
+      li.className = 'flex items-start justify-between gap-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 px-4 py-2 text-sm';
+
+      const span = document.createElement('span');
+      span.className = 'break-all';
+      span.textContent = m.text;              // textContent：用户输入不会被当 HTML 执行
+      li.appendChild(span);
+
+      const time = document.createElement('span');
+      time.className = 'text-xs text-slate-400 shrink-0 mt-0.5';
+      time.textContent = m.time;
+      li.appendChild(time);
+
+      const del = document.createElement('button');
+      del.className = 'text-slate-400 hover:text-red-500 shrink-0';
+      del.setAttribute('aria-label', '删除这条留言');
+      del.textContent = '✕';
+      del.addEventListener('click', function () {
+        messages.splice(i, 1);                        // 从数组中删掉第 i 条
+        localStorage.setItem(MSG_KEY, JSON.stringify(messages));
+        renderMessages();                             // 重画
+      });
+      li.appendChild(del);
+
+      msgList.appendChild(li);
+    });
+    msgEmpty.classList.toggle('hidden', messages.length > 0);
+  }
+
+  // 发布
   function publishMessage() {
-    const value = msgInput.value;
+    const value = msgInput.value.trim();      // trim：去掉首尾空格，"   " 会被判为空
     if (value === '') {
       msgInput.placeholder = '先写点什么再发布！';
+      msgInput.focus();
       return;
     }
-    const li = document.createElement('li');
-    li.textContent = value;
-    msgList.appendChild(li);
+    messages.push({
+      text: value,
+      time: new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
+    });
+    localStorage.setItem(MSG_KEY, JSON.stringify(messages));   // 存进浏览器
     msgInput.value = '';
-    msgEmpty.classList.add('hidden');   // [重构修正] 有留言后隐藏"还没有留言"提示
+    msgInput.placeholder = '写点什么…';                          // 提示语恢复正常
+    renderMessages();
   }
+
   msgBtn.addEventListener('click', publishMessage);
   msgInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') publishMessage();
   });
+
+  renderMessages();                           // 页面一打开就把历史留言画出来
 
   /* ---------- 10. 公告弹窗 ---------- */
   const noticeModal = document.querySelector('#notice-modal');
@@ -623,6 +809,15 @@
 
   // ③ 窗口宽度变化后重新对齐
   addEventListener('resize', () => movePillTo(navList.querySelector('.nav-link.active')));
+  
+    /* ---------- 12. 游戏卡片展开/收缩 ---------- */
+  document.querySelectorAll('.game-head').forEach(function (head) {
+    head.addEventListener('click', function () {
+      const card = head.closest('.game-card');     // 从被点处往上找到所属卡片
+      const isOpen = card.classList.toggle('open');
+      head.setAttribute('aria-expanded', String(isOpen));
+    });
+  });
   </script>
 
 </body>
