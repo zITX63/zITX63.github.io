@@ -1,0 +1,10 @@
+/* Tailwind 入口文件
+ * 这三行是固定写法，会被替换成 Tailwind 生成的 CSS：
+ *   base       = 浏览器默认样式重置（Reset）
+ *   components = 组件层（目前没用到）
+ *   utilities  = 所有小积木工具类（p-6 / flex / dark:bg-slate-900 ...）
+ * 你自己的自定义样式继续写在 index.html 的 <style> 里，不用搬到这里
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

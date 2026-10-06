@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>大豆包的个人主页</title>
   <meta name="description" content="大豆包 —— 个人网页新人 / 游戏爱好者 / 终身学习者" />
-  <!-- TailwindCSS CDN（开发用；正式上线建议构建成本地 CSS） -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 本地 Tailwind 样式（预编译产物，20.8KB）
+       新增从未用过的 Tailwind class 后需重建：双击 build-css.bat
+       开发时想省事可双击 dev-watch.bat，改完自动重建 -->
+  <link rel="stylesheet" href="styles.css">
 
   <!-- 【保持在 head】主题预加载：必须在页面渲染前执行，防止深色模式"白闪"，勿移动 -->
   <script>
@@ -18,17 +20,8 @@
     })();
   </script>
 
-  <!-- 【保持在 head】Tailwind 深色模式配置：必须在 CDN 之后执行，勿移动 -->
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['system-ui', '-apple-system', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'] },
-        }
-      }
-    }
-  </script>
+  <!-- 【已迁移】原内联 tailwind.config 已搬到 tailwind.config.js
+       深色模式 / 字体配置在构建时已烧进 styles.css，这里不再需要 -->
   <style>
     /* 滚动进入动画：初始透明，加类后浮现 */
     .reveal { opacity: 0; transform: translateY(24px); transition: all .7s cubic-bezier(.22,.61,.36,1); }
@@ -180,11 +173,13 @@
           </a>
         </div>
       </div>
-      <!-- 头像（替换为你的照片，如 avatar.jpg） -->
+      <!-- 头像：没放照片时显示 TX 字母，放了 images/avatar.jpg 会自动切换成照片 -->
       <div class="flex justify-center">
         <div class="w-64 h-64 md:w-80 md:h-80 rounded-full glow overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-          <!-- 有照片时替换为：<img src="avatar.jpg" class="w-full h-full object-cover" alt="头像"> -->
-          <span class="text-7xl md:text-8xl font-extrabold text-white select-none">TX</span>
+          <!-- 兜底：字母头像（默认显示） -->
+          <span id="avatar-fallback" class="text-7xl md:text-8xl font-extrabold text-white select-none">TX</span>
+          <!-- 真实头像：初始 hidden，由第 13 节脚本确认图片能加载后才显示，不会出现破图 -->
+          <img id="avatar-img" src="images/avatar.jpg" alt="ITX 的头像" class="hidden w-full h-full object-cover">
         </div>
       </div>
     </div>
@@ -926,6 +921,31 @@
       head.setAttribute('aria-expanded', String(isOpen));
     });
   });
+
+    /* ---------- 13. 头像自动切换（有 avatar.jpg 就显示照片，没有就保留 TX） ---------- */
+  const avatarImg = document.querySelector('#avatar-img');
+  const avatarFallback = document.querySelector('#avatar-fallback');
+
+  // 切换函数：用参数控制显示哪一边，逻辑只有一份
+  function showAvatar(hasPhoto) {
+    avatarImg.classList.toggle('hidden', !hasPhoto);
+    avatarFallback.classList.toggle('hidden', hasPhoto);
+  }
+
+  // 情况一：图片加载成功 → 换成照片
+  avatarImg.addEventListener('load', function () {
+    showAvatar(avatarImg.naturalWidth > 0);   // naturalWidth 为 0 说明图是坏的
+  });
+
+  // 情况二：图片加载失败（文件不存在 / 404）→ 保持 TX 字母
+  avatarImg.addEventListener('error', function () {
+    showAvatar(false);
+  });
+
+  // 补一次判定：图片被浏览器缓存时，load 事件可能早于本脚本执行 → 事件错过了不会触发
+  if (avatarImg.complete) {
+    showAvatar(avatarImg.naturalWidth > 0);
+  }
   </script>
 
 </body>
