@@ -67,9 +67,31 @@
     .game-card.open .game-detail { grid-template-rows: 1fr; }
     .game-detail > div { overflow: hidden; }
     .game-card.open .game-arrow { transform: rotate(180deg); }
+
+       /* 锚点跳转阻挡*/
+    html { scroll-padding-top: 5rem; }
+
+    /* 【无障碍】系统开启「减少动态效果」时：关掉平滑滚动 / 浮现位移 / 光标闪烁 / 色块滑动 */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }              /* 覆盖 <html class="scroll-smooth"> */
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .cursor-blink::after { animation: none; }
+      #navPill, .game-detail { transition: none; }
+    }
   </style>
+  <!-- 【兜底】禁用 JS 时：.reveal 初始是 opacity:0，没有 JS 给它加 .visible 就永远看不见内容 -->
+  <noscript>
+    <style>
+      .reveal { opacity: 1 !important; transform: none !important; }
+    </style>
+  </noscript>
 </head>
 <body class="bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased transition-colors duration-300">
+
+  <!-- 【无障碍】跳到主内容：平时 sr-only 藏起来，键盘 Tab 第一下聚焦时滑出显示 -->
+  <a href="#home" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[70] focus:rounded-full focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-sm focus:text-white">
+    跳到主内容
+  </a>
 
   <!-- ===================== 导航栏 ===================== -->
   <header class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-white/70 dark:bg-slate-950/70 border-b border-slate-200/60 dark:border-slate-800/60">
@@ -114,10 +136,10 @@
   </header>
 
   <!-- ===================== 公告模态框 ===================== -->
-  <div id="notice-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+  <div id="notice-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="notice-title">
   <div class="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
     <div class="flex items-start justify-between gap-4">
-      <h3 class="text-lg font-bold">📢 公告</h3>
+      <h3 id="notice-title" class="text-lg font-bold">📢 公告</h3>
       <button id="notice-close" class="text-xl leading-none text-slate-400 hover:text-slate-600">✕</button>
     </div>
     <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
@@ -152,9 +174,7 @@
           <a href="https://github.com/" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="GitHub">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.04.77 2.1v3.12c0 .3.21.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
           </a>
-          <a href="https://twitter.com/yourname" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors" aria-label="Twitter / X">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-4.9-6.4L6.4 22H3.3l7.3-8.3L1.2 2h6.4l4.4 5.9L18.9 2Zm-1.1 18h1.7L7 3.9H5.2L17.8 20Z"/></svg>
-          </a>
+          
           <a href="mailto:3111079711@qq.com" class="hover:text-indigo-500 transition-colors" aria-label="邮箱">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
           </a>
@@ -366,8 +386,13 @@
               </div>
             </div>
             <div class="grid sm:grid-cols-2 gap-3 mt-4">
-              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 1 · 放张 RE 截图</div>
-              <div class="w-full h-40 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-slate-400 text-xs">图片位 2 · 放张 RE 截图</div>
+                            <div class="w-full h-40 rounded-xl bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                <img src="images/RE-1.jpg" alt="《生化危机》游戏截图" loading="lazy" class="w-full h-40 object-contain">
+              </div>
+                            <div class="w-full h-40 rounded-xl bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                <img src="images/RE-2.jpg" alt="《生化危机》游戏截图" loading="lazy" class="w-full h-40 object-contain">
+              </div>
+
             </div>
           </div>
         </div>
@@ -521,6 +546,7 @@
       点我试试
     </button>
     <p id="magic-text" class="mt-4 text-slate-500">还没有被点过</p>
+    <button id="magic-reset" class="mt-2 hidden text-xs text-slate-400 underline-offset-2 hover:text-indigo-500 hover:underline">重置计数</button>
   </section>
 
   <!-- ===================== 留言板 ===================== -->
@@ -633,20 +659,51 @@
       </div>
     </a>`).join('');
 
-  /* ---------- 6. 点击计数器（变量改为 magic* 前缀，防止与其他功能重名） ---------- */
+  /* ---------- 6. 点击计数器（localStorage 持久化：刷新不清零） ---------- */
   const magicBtn = document.querySelector('#magic-btn');
   const magicText = document.querySelector('#magic-text');
+  const magicReset = document.querySelector('#magic-reset');
+  const CLICK_KEY = 'my-site-clicks';        // 存储钥匙名，和留言板的 MSG_KEY 区分开
+
+  // 读历史次数：parseInt 得到 NaN / 负数 / 存储损坏时，一律兜底成 0
   let clickCount = 0;
-  magicBtn.addEventListener('click', function () {
-    clickCount += 1;
-    if (clickCount >= 5) {
+  try {
+    const saved = parseInt(localStorage.getItem(CLICK_KEY), 10);
+    if (Number.isFinite(saved) && saved > 0) clickCount = saved;
+  } catch (e) {
+    clickCount = 0;
+  }
+
+  // 渲染函数：数据 → 画面。数字一变就调它，不用到处重复写判断
+  function renderClicks() {
+    if (clickCount === 0) {
+      magicText.textContent = '还没有被点过';
+      magicBtn.classList.remove('bg-red-600');
+      magicBtn.classList.add('bg-emerald-600');
+    } else if (clickCount >= 5) {            // 满 5 次：按钮变红 + 警告文案
       magicBtn.classList.remove('bg-emerald-600');
       magicBtn.classList.add('bg-red-600');
       magicText.textContent = '⚠️ 警告：你已经点了 ' + clickCount + ' 次！';
     } else {
       magicText.textContent = '你已经点了 ' + clickCount + ' 次';
     }
+    magicReset.classList.toggle('hidden', clickCount === 0);   // 有次数才显示「重置计数」
+  }
+
+  magicBtn.addEventListener('click', function () {
+    clickCount += 1;
+    try { localStorage.setItem(CLICK_KEY, String(clickCount)); } catch (e) {}  // 存进浏览器
+    renderClicks();
   });
+
+  magicReset.addEventListener('click', function () {
+    clickCount = 0;
+    try { localStorage.removeItem(CLICK_KEY); } catch (e) {}   // 连钥匙一起删干净
+    renderClicks();
+    magicBtn.focus();                        // 重置后焦点回到按钮，键盘用户不迷失
+  });
+
+  renderClicks();                            // 页面一打开就显示历史次数
 
   /* ---------- 7. 滚动浮现动画（必须放在 4、5 渲染之后，才能监听到新生成的卡片） ---------- */
   const io = new IntersectionObserver(entries => {
@@ -659,6 +716,11 @@
     });
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // 【兜底】老浏览器没有 IntersectionObserver 时，直接全部显示，避免内容永远透明
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+  }
 
   /* ---------- 8. 返回顶部 ---------- */
   const toTop = document.getElementById('toTop');
@@ -742,16 +804,46 @@
 
   renderMessages();                           // 页面一打开就把历史留言画出来
 
-  /* ---------- 10. 公告弹窗 ---------- */
+  /* ---------- 10. 公告弹窗（含无障碍：焦点管理 + 焦点陷阱 + Esc 关闭 + 锁背景滚动） ---------- */
   const noticeModal = document.querySelector('#notice-modal');
   const noticeClose = document.querySelector('#notice-close');
   const noticeOk = document.querySelector('#notice-ok');
 
+  let lastFocused = null;                    // 记住弹窗打开前焦点在哪，关闭后还回去
+
   function closeNotice() {
     noticeModal.classList.add('hidden');
+    document.body.style.overflow = '';       // 解锁背景滚动
+    if (lastFocused) lastFocused.focus();    // 把焦点还给原来的元素
   }
+
+  // 焦点陷阱：Tab / Shift+Tab 只在弹窗内部循环，不会跑到背后的页面上
+  noticeModal.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    const focusables = noticeModal.querySelectorAll('button');
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();                    // 拦住默认的「跳出去」，改成跳到最后一个
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
   noticeClose.addEventListener('click', closeNotice);
   noticeOk.addEventListener('click', closeNotice);
+
+  // Esc 也能关闭（键盘用户的习惯操作）
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !noticeModal.classList.contains('hidden')) closeNotice();
+  });
+
+  // 页面打开时弹窗本身就是显示的：锁背景滚动 + 焦点直接落在「知道了」
+  lastFocused = document.body;
+  document.body.style.overflow = 'hidden';
+  noticeOk.focus();
 
       /* ---------- 11. 导航滑动指示块（点击直达 + 滚动跟随，含防乱跳锁） ---------- */
   const navList = document.getElementById('navList');
