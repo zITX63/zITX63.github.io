@@ -230,9 +230,18 @@
   <section id="projects" class="py-24 bg-slate-50 dark:bg-slate-900/50">
     <!-- 这是项目作品区 -->
     <div class="max-w-5xl mx-auto px-6">
-      <h2 class="reveal text-3xl font-bold mb-3">项目作品</h2>
-      <p class="reveal text-indigo-500 font-medium mb-10">Projects</p>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectGrid"><!-- JS 渲染 --></div>
+      <div class="reveal flex items-end justify-between gap-4 mb-3">
+        <div>
+          <h2 class="text-3xl font-bold">项目作品</h2>
+          <p class="text-indigo-500 font-medium mt-1">Projects</p>
+        </div>
+        <!-- 入口：点这里跳到独立的 projects.html -->
+        <a href="projects.html"
+           class="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-indigo-500 hover:text-indigo-600 transition-colors">
+          查看全部 →
+        </a>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8" id="projectGrid"><!-- JS 渲染 --></div>
     </div>
   </section>
 
@@ -654,7 +663,8 @@
 
   /* ---------- 5. 项目数据渲染（改这个数组即可） ---------- */
   const projects = [
-    { title: '云笔记应用', desc: '支持 Markdown 与多端同步的笔记工具', tags: ['React', 'TypeScript'], emoji: '📝', link: '#' },
+    // link 填 '#' 表示还没上线；这里指向站内项目页，看详情更方便
+    { title: '个人主页 · 大豆包.dev', desc: 'HTML + TailwindCSS 手写，含深色模式与留言板，已上线 GitHub Pages', tags: ['HTML / CSS', 'TailwindCSS'], emoji: '🌐', link: 'projects.html' },
     { title: '天气小程序', desc: '简洁美观的天气预报，内置精美动画', tags: ['小程序', 'API'], emoji: '⛅', link: '#' },
     { title: '开源组件库', desc: '一套轻量级 Vue3 组件库，GitHub 500+ Star', tags: ['Vue3', '开源'], emoji: '📦', link: '#' },
   ];

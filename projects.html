@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>项目作品 · 大豆包.dev</title>
+  <meta name="description" content="大豆包.dev 的项目作品集 —— 个人主页 / 天气小程序 / 开源组件库" />
+
+  <!-- 本地 Tailwind 样式（和主页共用同一份 styles.css）
+       新增从未用过的 Tailwind class 后需重建：双击 build-css.bat -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- 【保持在 head】主题预加载：必须在页面渲染前执行，防止深色模式"白闪"，勿移动 -->
+  <script>
+    (function () {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark'
+                         : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', dark);
+    })();
+  </script>
+
+  <style>
+    /* 锚点跳转时给固定顶栏留位置 */
+    html { scroll-padding-top: 5rem; }
+
+    /* 滚动进入动画：初始透明，加 .visible 后浮现 */
+    .reveal { opacity: 0; transform: translateY(24px); transition: all .7s cubic-bezier(.22,.61,.36,1); }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* 进入本页时的整体淡入 */
+    @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .page-fade { animation: fade-in .35s ease-out; }
+
+    /* ===== 顶栏两种状态 =====
+       over-hero  = 浮在彩色首屏上（透明底 + 白字）
+       去掉之后   = 白底深字 + 毛玻璃 + 分隔线
+       （这里必须用 .site-header 类选择器、不能用 id，否则会盖掉 hover 效果） */
+    .site-header { background: transparent; border-bottom: 1px solid transparent; transition: background .3s, border-color .3s; }
+    .site-header .h-brand,
+    .site-header .h-back,
+    .site-header .h-icon { color: #fff; }
+    .site-header .h-brand span { color: rgba(255,255,255,.65); }
+    .site-header .h-back { border-color: rgba(255,255,255,.45); }
+    .site-header .h-back:hover { color: #fff; border-color: #fff; background: rgba(255,255,255,.14); }
+
+    .site-header:not(.over-hero) {
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(10px);
+      border-bottom-color: rgb(226 232 240);
+    }
+    .dark .site-header:not(.over-hero) {
+      background: rgba(2,6,23,.85);
+      border-bottom-color: rgb(30 41 59);
+    }
+    .site-header:not(.over-hero) .h-brand,
+    .site-header:not(.over-hero) .h-back,
+    .site-header:not(.over-hero) .h-icon { color: rgb(51 65 85); }
+    .dark .site-header:not(.over-hero) .h-brand,
+    .dark .site-header:not(.over-hero) .h-back,
+    .dark .site-header:not(.over-hero) .h-icon { color: rgb(226 232 240); }
+    .site-header:not(.over-hero) .h-brand span { color: rgb(99 102 241); }
+    .site-header:not(.over-hero) .h-back { border-color: rgb(203 213 225); }
+    .dark .site-header:not(.over-hero) .h-back { border-color: rgb(51 65 85); }
+    .site-header:not(.over-hero) .h-back:hover { color: rgb(99 102 241); border-color: rgb(99 102 241); background: transparent; }
+
+    /* 首屏文字逐个浮出 */
+    .hero-in { animation: fade-in .6s cubic-bezier(.22,.61,.36,1) both; }
+
+    /* ===== 首屏背景：工程蓝图风格（呼应「项目作品 = 施工图纸」） =====
+       六层全部用 CSS 渐变画出来，不加载任何图片、不影响加载速度：
+         ① .hero-blueprint  深蓝底（首屏固定深色，不随主题切换）
+         ② .hero-grid       细网格 32px + 每 5 格一条粗线 160px
+         ③ .hero-scan       缓慢下移的扫描光带（纯装饰）
+         ④ .hero-glow       三团径向光晕：青 / 靛 / 品红
+         ⑤ .hero-corner     四角图纸定位角标（L 形）
+         ⑥ .hero-mark       右侧超大的半透明 </> 水印
+         ⑦ .hero-fade       底部渐隐到页面底色，和下方浅灰区自然衔接
+       【想换配色】只改 ①的底色 和 ④的三处 rgba 即可，其余不用动 */
+
+    .hero-blueprint { background-color: #0a1020; }
+
+    .hero-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(56,189,248,.075) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,.075) 1px, transparent 1px),
+        linear-gradient(rgba(56,189,248,.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,.16) 1px, transparent 1px);
+      background-size: 32px 32px, 32px 32px, 160px 160px, 160px 160px;
+      /* 四周淡出，避免网格像贴纸一样有硬边 */
+      -webkit-mask-image: radial-gradient(125% 105% at 50% 32%, #000 32%, transparent 88%);
+              mask-image: radial-gradient(125% 105% at 50% 32%, #000 32%, transparent 88%);
+    }
+
+    @keyframes hero-scan {
+      from { transform: translateY(-40%); }
+      to   { transform: translateY(340%); }
+    }
+    .hero-scan {
+      position: absolute; inset-inline: 0; top: 0; height: 32%; pointer-events: none;
+      background: linear-gradient(to bottom, transparent, rgba(103,232,249,.10), transparent);
+      animation: hero-scan 8s ease-in-out infinite;
+    }
+
+    .hero-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(55% 60% at 12% 8%,  rgba(34,211,238,.28), transparent 70%),
+        radial-gradient(50% 55% at 88% 88%, rgba(99,102,241,.34), transparent 72%),
+        radial-gradient(38% 40% at 72% 18%, rgba(217,70,239,.16), transparent 70%);
+    }
+
+    /* 四角角标：只画 L 形的两条边，另外两边保持透明 */
+    .hero-corner { position: absolute; width: 26px; height: 26px; pointer-events: none; border-color: rgba(103,232,249,.45); }
+    .hero-corner.tl { top: 22px;    left: 22px;  border-top: 1px solid; border-left: 1px solid; }
+    .hero-corner.tr { top: 22px;    right: 22px; border-top: 1px solid; border-right: 1px solid; }
+    .hero-corner.bl { bottom: 22px; left: 22px;  border-bottom: 1px solid; border-left: 1px solid; }
+    .hero-corner.br { bottom: 22px; right: 22px; border-bottom: 1px solid; border-right: 1px solid; }
+
+    .hero-mark {
+      position: absolute; right: -1%; top: 50%; transform: translateY(-50%);
+      pointer-events: none; user-select: none; line-height: 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: clamp(8rem, 24vw, 18rem); font-weight: 800; letter-spacing: -.05em;
+      color: rgba(125,211,252,.07);
+    }
+
+    .hero-fade {
+      position: absolute; inset-inline: 0; bottom: 0; height: 6rem; pointer-events: none;
+      background: linear-gradient(to bottom, rgba(248,250,252,0), rgb(248 250 252));
+    }
+    .dark .hero-fade { background: linear-gradient(to bottom, rgba(2,6,23,0), rgb(2 6 23)); }
+
+    /* 「项目介绍」可展开区：靠 grid-template-rows 0fr→1fr 实现高度过渡
+       （和主页游戏卡展开是同一套写法，全站保持一致）
+       注意：内层必须再包一个 overflow:hidden 的 div，否则收起时内容会漏出来 */
+    .pj-detail {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .35s ease;
+    }
+    .pj-card.open .pj-detail { grid-template-rows: 1fr; }
+    .pj-detail > div { overflow: hidden; }
+
+    /* 圆形按钮里的「＋」：展开时旋转 45° 变成「×」（主页游戏卡是箭头转 180°，这里刻意换一种） */
+    .pj-card.open .pj-plus { transform: rotate(45deg); }
+
+    /* 展开后五块内容逐条浮出，制造节奏感（延迟按 nth-child 递增） */
+    @keyframes intro-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .pj-card.open .intro-item { animation: intro-in .45s cubic-bezier(.22,.61,.36,1) both; }
+    .pj-card.open .intro-item:nth-child(2) { animation-delay: .06s; }
+    .pj-card.open .intro-item:nth-child(3) { animation-delay: .12s; }
+    .pj-card.open .intro-item:nth-child(4) { animation-delay: .18s; }
+    .pj-card.open .intro-item:nth-child(5) { animation-delay: .24s; }
+
+    /* 时间轴最后一块不再往下画线，否则末尾会拖一条多余的尾巴 */
+    .intro-item:last-child .tl-line { display: none; }
+
+    /* 【无障碍】系统开启「减少动态效果」时关掉全部动画 */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .page-fade, .hero-in { animation: none; }
+      .hero-scan { animation: none; opacity: .5; }   /* 扫描光带停住，保留一点质感 */
+      .pj-detail, .pj-plus { transition: none; }
+      .pj-card.open .intro-item { animation: none; }
+    }
+  </style>
+
+  <!-- 【兜底】禁用 JS 时 .reveal 初始是 opacity:0，没有 JS 就永远看不见内容 -->
+  <noscript>
+    <style>
+      .reveal { opacity: 1 !important; transform: none !important; }
+    </style>
+  </noscript>
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased transition-colors duration-300">
+
+  <!-- 【无障碍】跳到主内容：平时隐藏，键盘 Tab 第一下聚焦时滑出 -->
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[70] focus:rounded-full focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-sm focus:text-white">
+    跳到主内容
+  </a>
+
+  <!-- ===================== 顶栏（浮在首屏上，往下滚才变白底） ===================== -->
+  <header id="siteHeader" class="site-header over-hero fixed top-0 inset-x-0 z-50 h-16">
+    <nav class="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
+      <a href="index.html" class="h-brand font-bold text-lg tracking-tight">大豆包<span>.dev</span></a>
+
+      <div class="flex items-center gap-3">
+        <a href="index.html#projects"
+           class="h-back inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors">
+          <span aria-hidden="true">←</span> 返回主页
+        </a>
+
+        <button id="themeBtn" aria-label="切换深色模式" class="h-icon p-2 rounded-full hover:bg-white/20 transition-colors">
+          <svg id="iconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.3 11.3 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.3-11.3 1.4-1.4"/></svg>
+          <svg id="iconMoon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="page-fade">
+
+    <!-- ===================== 首屏：工程蓝图风格（网格 / 角标 / 扫描光带） =====================
+         全部是 CSS 画的，没有图片。改配色看 <style> 里 .hero-blueprint 与 .hero-glow 的注释 -->
+    <section id="hero" class="hero-blueprint relative overflow-hidden text-white">
+      <!-- 装饰层（纯装饰，aria-hidden 让读屏软件忽略） -->
+      <div aria-hidden="true" class="hero-grid"></div>
+      <div aria-hidden="true" class="hero-scan"></div>
+      <div aria-hidden="true" class="hero-glow"></div>
+      <div aria-hidden="true" class="hero-corner tl"></div>
+      <div aria-hidden="true" class="hero-corner tr"></div>
+      <div aria-hidden="true" class="hero-corner bl"></div>
+      <div aria-hidden="true" class="hero-corner br"></div>
+      <div aria-hidden="true" class="hero-mark">&lt;/&gt;</div>
+      <div aria-hidden="true" class="hero-fade"></div>
+
+      <div class="relative max-w-5xl mx-auto px-6 pt-28 pb-16 md:pt-32 md:pb-20">
+        <!-- 蓝图上的"图纸标注"：等宽字体 + 前置斜杠，像代码注释 -->
+        <p class="hero-in font-mono text-xs md:text-sm font-semibold tracking-[0.22em] uppercase text-cyan-300/80" style="animation-delay:.05s">// Selected Works</p>
+        <h1 class="hero-in mt-4 text-4xl md:text-6xl font-extrabold tracking-tight" style="animation-delay:.15s">项目作品</h1>
+        <p class="hero-in mt-5 max-w-2xl text-base md:text-lg text-slate-300 leading-relaxed" style="animation-delay:.25s">
+          这里是我做过的东西。有些是为了解决自己的问题，有些纯粹是想试试某个技术能做到什么程度。点开任意一张卡片，可以看它的设计稿与实拍截图。
+        </p>
+
+        <!-- 统计：数字由 JS 按项目数据自动算出来 -->
+        <dl class="hero-in mt-10 grid grid-cols-3 gap-6 max-w-lg" style="animation-delay:.35s">
+          <div class="border-l-2 border-cyan-400/40 pl-3">
+            <dd class="font-mono text-3xl md:text-4xl font-extrabold text-cyan-200" id="statProjects">0</dd>
+            <dt class="mt-1 text-xs md:text-sm text-slate-400">个项目</dt>
+          </div>
+          <div class="border-l-2 border-cyan-400/40 pl-3">
+            <dd class="font-mono text-3xl md:text-4xl font-extrabold text-cyan-200" id="statPhotos">0</dd>
+            <dt class="mt-1 text-xs md:text-sm text-slate-400">张截图</dt>
+          </div>
+          <div class="border-l-2 border-cyan-400/40 pl-3">
+            <dd class="font-mono text-3xl md:text-4xl font-extrabold text-cyan-200" id="statCats">0</dd>
+            <dt class="mt-1 text-xs md:text-sm text-slate-400">个分类</dt>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ===================== 面包屑 + 分类筛选（吸顶） ===================== -->
+    <div class="sticky top-16 z-30 border-b border-slate-200 dark:border-slate-800 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur">
+      <div class="max-w-5xl mx-auto px-6 py-3 flex flex-col md:flex-row md:items-center gap-3">
+        <nav aria-label="面包屑导航" class="flex items-center gap-2 text-sm text-slate-500 shrink-0">
+          <a href="index.html" class="hover:text-indigo-500 transition-colors">主页</a>
+          <span aria-hidden="true" class="text-slate-300 dark:text-slate-700">›</span>
+          <span class="text-slate-800 dark:text-slate-200 font-medium">项目作品</span>
+        </nav>
+
+        <!-- 筛选按钮由 JS 生成，点哪个就只显示那个分类 -->
+        <div id="filterBar" class="flex flex-wrap gap-2 md:ml-auto"></div>
+      </div>
+    </div>
+
+    <!-- ===================== 项目卡片列表（由 JS 渲染） ===================== -->
+    <section class="py-14 md:py-16">
+      <div class="max-w-5xl mx-auto px-6">
+        <div id="projectList" class="space-y-8 md:space-y-10"><!-- JS 渲染 --></div>
+      </div>
+    </section>
+
+    <!-- 底部返回 -->
+    <section class="pb-24">
+      <div class="max-w-5xl mx-auto px-6 text-center">
+        <a href="index.html#projects"
+           class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-7 py-3 text-white font-medium hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/30 transition-all">
+          <span aria-hidden="true">←</span> 返回主页
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== 页脚 ===================== -->
+  <footer class="border-t border-slate-200 dark:border-slate-800 py-8">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+      <p>© 2026 大豆包 · 保留所有权利</p>
+      <p>用 <span class="text-red-500">♥</span>创造大豆包</p>
+    </div>
+  </footer>
+
+  <!-- ===================== 图片灯箱（点缩略图后全屏看图） ===================== -->
+  <div id="lightbox" class="fixed inset-0 z-[60] hidden flex flex-col items-center justify-center bg-black/85 p-4"
+       role="dialog" aria-modal="true" aria-label="图片查看器">
+    <button id="lbClose" aria-label="关闭" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white text-xl hover:bg-white/25 transition-colors">✕</button>
+    <button id="lbPrev" aria-label="上一张" class="absolute left-2 md:left-8 w-11 h-11 rounded-full bg-white/10 text-white text-2xl hover:bg-white/25 transition-colors">‹</button>
+    <button id="lbNext" aria-label="下一张" class="absolute right-2 md:right-8 w-11 h-11 rounded-full bg-white/10 text-white text-2xl hover:bg-white/25 transition-colors">›</button>
+    <img id="lbImg" alt="" class="max-h-[78vh] max-w-full rounded-xl shadow-2xl">
+    <p id="lbCap" class="mt-4 text-sm text-white/80"></p>
+  </div>
+
+  <script>
+    /* ---------- 1. 深色模式（和主页逻辑一致） ---------- */
+    const themeBtn = document.getElementById('themeBtn');
+    const iconSun = document.getElementById('iconSun');
+    const iconMoon = document.getElementById('iconMoon');
+
+    const applyTheme = (dark) => {
+      document.documentElement.classList.toggle('dark', dark);
+      iconSun.classList.toggle('hidden', !dark);   // 深色时显示太阳
+      iconMoon.classList.toggle('hidden', dark);   // 浅色时显示月亮
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    };
+    // head 里的脚本已提前设好 dark 类（防白闪），这里以当前状态为准同步图标
+    applyTheme(document.documentElement.classList.contains('dark'));
+    themeBtn.addEventListener('click', () =>
+      applyTheme(!document.documentElement.classList.contains('dark')));
+
+
+    /* ---------- 2. 项目数据（★ 只改这里就能换内容） ----------
+     *
+     * 怎么加照片：
+     *   1) 把图片放进  images/projects/  文件夹（文件名用英文小写，如 notes-cover.jpg）
+     *   2) cover  : 封面大图，填 'images/projects/notes-cover.jpg'
+     *      photos : 截图数组，可以放任意张，每张带一句 caption 说明
+     *   3) 没填或文件不存在 → 自动显示 emoji 占位块，不会出破图
+     *
+     * 字段说明：
+     *   cat    : 分类，用于顶部筛选按钮（同名会合并成一个按钮）
+     *   accent : 这一张卡的配色，可选 'indigo' / 'emerald' / 'amber'（见下面的 ACCENTS）
+     *            会同时影响封面渐变、标签、亮点勾、时间轴圆点、面板底色
+     *   status : 右上角状态标签文字
+     *   points : 亮点列表，想加几条写几条
+     *   intro  : 底部「展开项目介绍」的内容，固定五块
+     *            bg=背景 / goal=目标 / process=过程 / hard=难点 / gain=收获
+     *            任一块留空 '' → 页面显示虚线占位框提示该写什么；整段删掉则不显示展开按钮
+     */
+    const projects = [
+      /* ╔══════════════════════════════════════════════════════════════╗
+         ║  项目 ①  ↓↓↓ 可编辑区域：改下面这些字段就行，不用动别处      ║
+         ╚══════════════════════════════════════════════════════════════╝ */
+      {
+        cat: 'Web',
+        accent: 'indigo',
+        no: '01',
+        title: '个人主页 · 大豆包.dev',
+        subtitle: '从零手写、自己部署上线的个人站点',
+        desc: 'HTML + TailwindCSS 手写，11 个板块、13 组交互（深色模式 / 留言板 / 游戏卡展开 / 导航指示块…），已部署在 GitHub Pages。',
+        cover: '',                                   // ← 例：'images/projects/site-cover.jpg'
+        emoji: '🌐',
+        status: '持续更新',
+        year: '2026',
+        tags: ['HTML / CSS', 'JavaScript', 'TailwindCSS', 'GitHub Pages'],
+        points: [
+          '深色模式跟随系统，刷新不白闪（主题判断提到 head 同步执行）',
+          '留言板用 localStorage 持久化，写了刷新也还在，可单条删除',
+          '导航有滑动指示块：点哪跳哪，滚动时还会自动跟随当前板块',
+          'Tailwind 由 CDN 改成本地预编译，首屏加载量从 212KB 降到 107KB',
+          '做了无障碍：跳到主内容、焦点陷阱、Esc 关弹窗、尊重系统减少动效'
+        ],
+        photos: [
+          // { src: 'images/projects/site-1.jpg', caption: '首页首屏（头像 + 打字机）' },
+          // { src: 'images/projects/site-2.jpg', caption: '游戏区展开后的实拍截图' },
+          // { src: 'images/projects/site-3.jpg', caption: '深色模式下的书单与留言板' },
+        ],
+        link: 'https://zitx63.github.io',
+
+        /* ── 可编辑区域：项目介绍（展开后显示，五块都能单独改）─────────
+           留空字符串 '' → 页面自动显示虚线占位框提示该写什么，不会留空白 */
+        intro: {
+          bg:      '学了一阵子前端，想有个自己的地方放东西：我是谁、会点什么、读过什么书、玩过什么游戏。市面上的博客平台模板都长一个样，索性自己写一个。',
+          goal:    '一个页面讲清楚「我是谁、在学什么、做过什么」；手机电脑都好看；加载要快；最重要的是我自己能长期维护下去。',
+          process: '先用 AI 辅助生成初版框架，再自己逐行读、逐段改，直到每一行都能看懂。样式用 TailwindCSS，交互按小节一节节往上加（打字机、技能条、滚动浮现、点击计数、留言板、公告弹窗、导航指示块、游戏卡展开、头像自动切换）。最后把 Tailwind 从 CDN 换成本地预编译的 styles.css，用 Git 推到 GitHub Pages 上线。',
+          hard:    '最折腾的是 Tailwind 本地化之后：新写的 class 必须重新构建 styles.css 才生效，它不报错、只是静悄悄没样式，排查了很久才发现是构建扫描范围的问题。另一个是深色模式刷新会白闪，把主题判断脚本提到 <head> 里同步执行才解决。',
+          gain:    '第一次完整走通「写代码 → 构建 → 提交 → 上线」这条链路；也真正理解了性能优化和无障碍不是锦上添花，而是写完就该回头检查的东西。'
+        }
+      },
+      {
+        cat: '小程序',
+        accent: 'emerald',
+        no: '02',
+        title: '天气小程序',
+        subtitle: '简洁好用、带精美天气动画的预报工具',
+        desc: '接入第三方气象 API，做了请求缓存与失败兜底，弱网下也能显示上一次的数据。',
+        cover: '',
+        emoji: '⛅',
+        status: '已完成',
+        year: '2024',
+        tags: ['小程序', 'API', '动画'],
+        points: ['天气动效随实时数据变化（晴/雨/雪）', '请求缓存，弱网也能看到上次数据', '首屏加载 < 1 秒'],
+        photos: [
+          // { src: 'images/projects/weather-1.jpg', caption: '首页' },
+        ],
+        link: '#',
+
+        /* ── 可编辑区域：项目介绍 ────────────────────────────────────── */
+        intro: {
+          bg:      '想学小程序开发，就拿天气这种数据简单、但很考验界面表现力的题材来练手。',
+          goal:    '首屏加载 < 1 秒；天气状态用动画表达；弱网下也能看到上一次的数据。',
+          process: '接入第三方气象 API，用小程序自带的 storage 做缓存；动画用 CSS 关键帧实现，按天气码切换不同的图层。',
+          hard:    '第三方 API 偶尔超时，页面会白屏。加了请求缓存 + 失败兜底后，最差情况也能展示历史数据和一行提示。',
+          gain:    '理解了「网络请求一定要有降级方案」，也第一次体会到动画对体验的提升有多大。'
+        }
+      },
+      {
+        cat: '开源',
+        accent: 'amber',
+        no: '03',
+        title: '开源组件库',
+        subtitle: '一套轻量级 Vue3 组件库',
+        desc: 'GitHub 500+ Star。所有组件都支持深色模式与键盘操作，配了完整的单元测试。',
+        cover: '',
+        emoji: '📦',
+        status: '维护中',
+        year: '2024',
+        tags: ['Vue3', '开源', '单元测试'],
+        points: ['按需引入，全量打包 < 40KB', '全部组件支持键盘操作与深色模式', '测试覆盖率 90%+'],
+        photos: [
+          // { src: 'images/projects/ui-1.jpg', caption: '组件总览' },
+        ],
+        link: '#',
+
+        /* ── ★ 预设模板：这个项目的介绍还没写，五块全是空字符串 ────────
+           照着上面两个的格式填进去即可；不填的话，展开后会显示虚线占位框
+           提示每一块该写什么（不会是一片空白） */
+        intro: {
+          bg:      '',
+          goal:    '',
+          process: '',
+          hard:    '',
+          gain:    ''
+        }
+      },
+    ];
+
+    /* ---------- 2b. 配色方案：每个项目一套，三张卡不再长得一样 ----------
+     * ⚠️ 这里的 class 必须写完整字符串，不能拼 `text-${color}-500`：
+     *    Tailwind 是「扫文本」的，拼接出来的名字它扫不到，样式就不会生成。
+     * 想换配色：改上面每个项目的 accent 值（indigo / emerald / amber），
+     *           或在这里新增一套，class 照抄再换颜色名。
+     */
+    const ACCENTS = {
+      indigo: {
+        text:  'text-indigo-500',
+        dot:   'bg-indigo-500',
+        chip:  'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500',
+        tint:  'bg-indigo-50/70 dark:bg-indigo-500/[0.07]',
+        edge:  'border-indigo-100 dark:border-indigo-500/25',
+        cover: 'from-indigo-500 to-purple-600'
+      },
+      emerald: {
+        text:  'text-emerald-600',
+        dot:   'bg-emerald-500',
+        chip:  'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600',
+        tint:  'bg-emerald-50/70 dark:bg-emerald-500/[0.07]',
+        edge:  'border-emerald-100 dark:border-emerald-500/25',
+        cover: 'from-emerald-500 to-teal-600'
+      },
+      amber: {
+        text:  'text-amber-600',
+        dot:   'bg-amber-500',
+        chip:  'bg-amber-50 dark:bg-amber-500/10 text-amber-600',
+        tint:  'bg-amber-50/70 dark:bg-amber-500/[0.07]',
+        edge:  'border-amber-100 dark:border-amber-500/25',
+        cover: 'from-amber-500 to-orange-600'
+      }
+    };
+
+
+    /* ---------- 3. 渲染卡片 ---------- */
+    const listEl = document.getElementById('projectList');
+
+    // 「项目介绍」里的一块：时间轴形态（左竖线 + 圆点 + 内容）
+    // 文字为空时显示虚线占位框，提示这一块该写什么
+    function introBlock(label, text, hint, ac) {
+      const body = text
+        ? `<p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${text}</p>`
+        : `<p class="text-sm text-slate-400 leading-relaxed border border-dashed border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2">✏️ 待填写：${hint}</p>`;
+      return `
+        <li class="intro-item flex gap-3">
+          <div class="flex flex-col items-center pt-2 shrink-0">
+            <span class="w-2.5 h-2.5 rounded-full ${ac.dot}"></span>
+            <span class="tl-line flex-1 w-px bg-slate-200 dark:bg-slate-700 mt-1"></span>
+          </div>
+          <div class="flex-1 pb-5">
+            <h4 class="text-xs font-bold ${ac.text} tracking-wider mb-1.5">${label}</h4>
+            ${body}
+          </div>
+        </li>`;
+    }
+
+    // 生成一张卡片的 HTML。cover / photos 为空时自动退化成占位块
+    function cardHTML(p, idx) {
+      const ac = ACCENTS[p.accent] || ACCENTS.indigo;   // 这套配色会贯穿整张卡
+      const hasCover = !!p.cover;
+      const cover = `
+        <div class="relative h-52 md:h-full min-h-[13rem] overflow-hidden bg-gradient-to-br ${ac.cover}">
+          <div data-placeholder class="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 ${hasCover ? 'hidden' : ''}">
+            <span class="text-5xl md:text-6xl">${p.emoji}</span>
+            <span class="mt-3 text-[11px] leading-relaxed text-white/70">${hasCover ? '封面图加载失败' : '封面图放这里<br>images/projects/…'}</span>
+          </div>
+          ${hasCover ? `<img data-fallback src="${p.cover}" alt="${p.title} 封面" loading="lazy" class="absolute inset-0 w-full h-full object-cover">` : ''}
+          <span class="absolute left-4 top-3 text-5xl font-extrabold text-white/25 select-none">${p.no}</span>
+        </div>`;
+
+      const strip = p.photos.length ? `
+        <div class="mt-6">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">实拍截图 · 点击放大</p>
+          <div class="flex flex-wrap gap-2">
+            ${p.photos.map((ph, i) => `
+              <button data-album="${idx}" data-index="${i}"
+                      class="group relative w-24 h-16 md:w-28 md:h-20 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-2 hover:ring-indigo-500 transition-all">
+                <span data-placeholder class="absolute inset-0 flex items-center justify-center text-xs text-slate-400">无图</span>
+                <img data-fallback src="${ph.src}" alt="${ph.caption || p.title + ' 截图'}" loading="lazy"
+                     class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              </button>`).join('')}
+          </div>
+        </div>` : '';
+
+      // 底部可展开的「项目介绍」区
+      // 展开按钮：图标方块 + 双行标题 + 圆形加号（展开时旋转 45° 变叉号）
+      // 面板内容：时间轴（不是主页那种朴素折叠条），五块逐条浮出
+      const intro = p.intro ? `
+        <div class="border-t border-slate-200 dark:border-slate-800">
+          <button data-intro aria-expanded="false" aria-controls="intro-${idx}"
+                  class="w-full flex items-center gap-3 px-6 md:px-8 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40">
+            <span class="grid place-items-center w-8 h-8 rounded-lg ${ac.chip} text-sm shrink-0" aria-hidden="true">📖</span>
+            <span class="flex-1">
+              <span class="block text-sm font-semibold">项目介绍</span>
+              <span class="pj-label block text-xs text-slate-400">点击展开：背景 · 目标 · 过程 · 难点 · 收获</span>
+            </span>
+            <span class="grid place-items-center w-7 h-7 rounded-full border border-slate-300 dark:border-slate-600 text-slate-500 shrink-0">
+              <svg class="pj-plus w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </button>
+        </div>
+
+        <div id="intro-${idx}" class="pj-detail">
+          <div>
+            <div class="px-6 md:px-8 pb-7">
+              <div class="rounded-2xl border ${ac.edge} ${ac.tint} p-5 md:p-6">
+                <p class="text-[11px] text-slate-400 mb-4">✏️ 下面每一块都能单独改：projects.html → 第 2 节 → 这个项目的 intro</p>
+                <ol>
+                  ${introBlock('背景 · 为什么做',         p.intro.bg,      '这个项目的起因，一两句话', ac)}
+                  ${introBlock('目标 · 想做到什么',       p.intro.goal,    '你给自己定的目标 / 验收标准', ac)}
+                  ${introBlock('过程 · 怎么做的',         p.intro.process, '技术选型、实现顺序、关键步骤', ac)}
+                  ${introBlock('难点 · 卡在哪、怎么解决', p.intro.hard,    '踩过的坑和解决办法', ac)}
+                  ${introBlock('收获 · 学到了什么',       p.intro.gain,    '做完之后的收获或反思', ac)}
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>` : '';
+
+      return `
+        <article class="pj-card reveal group rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300"
+                 data-cat="${p.cat}">
+          <div class="grid md:grid-cols-5">
+            <div class="md:col-span-2">${cover}</div>
+
+            <div class="md:col-span-3 p-6 md:p-8">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <span class="text-xs font-semibold ${ac.text} tracking-wider">${p.cat} · ${p.year}</span>
+                  <h2 class="mt-1 text-2xl font-bold tracking-tight">${p.title}</h2>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">${p.subtitle}</p>
+                </div>
+                <span class="shrink-0 text-xs px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">${p.status}</span>
+              </div>
+
+              <p class="mt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${p.desc}</p>
+
+              <ul class="mt-4 space-y-1.5">
+                ${p.points.map(t => `
+                  <li class="flex gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <span class="${ac.text} shrink-0">✓</span><span>${t}</span>
+                  </li>`).join('')}
+              </ul>
+
+              <div class="mt-5 flex flex-wrap items-center gap-2">
+                ${p.tags.map(t => `<span class="text-xs px-2.5 py-1 rounded-full ${ac.chip}">${t}</span>`).join('')}
+                ${p.link && p.link !== '#' ? `<a href="${p.link}" target="_blank" rel="noopener" class="ml-auto text-sm font-medium ${ac.text} hover:opacity-70 transition-opacity">访问项目 →</a>` : ''}
+              </div>
+
+              ${strip}
+            </div>
+          </div>
+
+          ${intro}
+        </article>`;
+    }
+
+    // 图片坏掉/不存在时：把 img 藏起来，露出底下的占位块（避免出现破图图标）
+    function bindImageFallback(scope) {
+      scope.querySelectorAll('img[data-fallback]').forEach(img => {
+        const ph = img.parentElement.querySelector('[data-placeholder]');
+        const fail = () => { img.classList.add('hidden'); if (ph) ph.classList.remove('hidden'); };
+        const ok = () => { if (img.naturalWidth > 0 && ph) ph.classList.add('hidden'); };
+        img.addEventListener('error', fail);
+        img.addEventListener('load', ok);
+        // 图片被缓存时 load 可能早于本脚本执行，这里补判一次
+        if (img.complete) img.naturalWidth > 0 ? ok() : fail();
+      });
+    }
+
+
+    /* ---------- 4. 分类筛选 ---------- */
+    const filterBar = document.getElementById('filterBar');
+    const cats = ['全部', ...new Set(projects.map(p => p.cat))];
+    let currentCat = '全部';
+
+    filterBar.innerHTML = cats.map(c => `
+      <button data-cat="${c}"
+              class="chip text-sm px-3.5 py-1.5 rounded-full border transition-colors ${c === currentCat
+                ? 'bg-indigo-600 border-indigo-600 text-white'
+                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-indigo-500 hover:text-indigo-500'}">
+        ${c}
+      </button>`).join('');
+
+    function renderList() {
+      // 先带上「在 projects 里的原始下标」再筛选，
+      // 否则筛选后下标会错位，点缩略图会打开别的项目相册
+      listEl.innerHTML = projects
+        .map((p, i) => ({ p, i }))
+        .filter(o => currentCat === '全部' || o.p.cat === currentCat)
+        .map(o => cardHTML(o.p, o.i)).join('');
+      bindImageFallback(listEl);
+      observeReveal();          // 新生成的卡片要重新挂上浮现动画
+    }
+
+    filterBar.addEventListener('click', e => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      currentCat = btn.dataset.cat;
+      filterBar.querySelectorAll('.chip').forEach(b => {
+        const on = b === btn;
+        b.classList.toggle('bg-indigo-600', on);
+        b.classList.toggle('border-indigo-600', on);
+        b.classList.toggle('text-white', on);
+      });
+      renderList();
+    });
+
+
+    /* ---------- 5. 图片灯箱 ---------- */
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lbCap = document.getElementById('lbCap');
+    let album = [];            // 当前正在看的那组图
+    let lbIdx = 0;
+    let lastFocused = null;
+
+    function showPhoto(i) {
+      lbIdx = (i + album.length) % album.length;   // 取模实现循环：最后一张的下一张回到第一张
+      lbImg.src = album[lbIdx].src;
+      lbImg.alt = album[lbIdx].caption || '';
+      lbCap.textContent = (album[lbIdx].caption || '') + '  (' + (lbIdx + 1) + '/' + album.length + ')';
+    }
+
+    function openLightbox(photos, i) {
+      album = photos;
+      lastFocused = document.activeElement;
+      showPhoto(i);
+      lb.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';     // 锁住背景滚动
+      document.getElementById('lbClose').focus();
+    }
+
+    function closeLightbox() {
+      lb.classList.add('hidden');
+      document.body.style.overflow = '';
+      if (lastFocused) lastFocused.focus();
+    }
+
+    listEl.addEventListener('click', e => {
+      const btn = e.target.closest('[data-album]');
+      if (!btn) return;
+      const p = projects[Number(btn.dataset.album)];
+      if (p && p.photos.length) openLightbox(p.photos, Number(btn.dataset.index));
+    });
+
+    document.getElementById('lbClose').addEventListener('click', closeLightbox);
+    document.getElementById('lbPrev').addEventListener('click', () => showPhoto(lbIdx - 1));
+    document.getElementById('lbNext').addEventListener('click', () => showPhoto(lbIdx + 1));
+    lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });   // 点黑色背景也能关
+    addEventListener('keydown', e => {
+      if (lb.classList.contains('hidden')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') showPhoto(lbIdx - 1);
+      if (e.key === 'ArrowRight') showPhoto(lbIdx + 1);
+    });
+
+
+    /* ---------- 6. 项目介绍 展开 / 收起 ---------- */
+    // 事件委托挂在 listEl 上（而不是每个按钮上），这样筛选重渲染后不用重新绑定
+    listEl.addEventListener('click', e => {
+      const btn = e.target.closest('[data-intro]');
+      if (!btn) return;
+      const card = btn.closest('.pj-card');
+      const open = card.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+      btn.querySelector('.pj-label').textContent = open
+        ? '点击收起'
+        : '点击展开：背景 · 目标 · 过程 · 难点 · 收获';
+    });
+
+    /* ---------- 7. 滚动浮现动画 ---------- */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.12 });
+
+    function observeReveal() {
+      document.querySelectorAll('#projectList .reveal').forEach(el => {
+        if (!el.classList.contains('visible')) io.observe(el);
+      });
+    }
+    // 老浏览器没有 IntersectionObserver 时直接全部显示，避免内容永远透明
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+    }
+
+
+    /* ---------- 8. 顶栏：滚过首屏后从「透明白字」变「白底深字」 ---------- */
+    const header = document.getElementById('siteHeader');
+    const hero = document.getElementById('hero');
+    function syncHeader() {
+      header.classList.toggle('over-hero', window.scrollY < hero.offsetHeight - 64);
+    }
+    addEventListener('scroll', syncHeader, { passive: true });
+    syncHeader();
+
+
+    /* ---------- 9. 首屏统计数字 + 首次渲染 ---------- */
+    document.getElementById('statProjects').textContent = projects.length;
+    document.getElementById('statPhotos').textContent =
+      projects.reduce((n, p) => n + p.photos.length, 0);
+    document.getElementById('statCats').textContent = cats.length - 1;
+
+    renderList();
+  </script>
+</body>
+</html>

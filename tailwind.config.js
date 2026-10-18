@@ -7,8 +7,8 @@
  */
 module.exports = {
   // 告诉 Tailwind 去哪些文件里找 class，找到了才会生成对应 CSS。
-  // 以后如果新增了别的 html 页面（如 blog.html），在这里补一行：'./blog.html'
-  content: ['./index.html'],
+  // ⚠️ 每新增一个 html 页面都必须在这里补一行，否则那个页面完全没有样式。
+  content: ['./index.html', './projects.html'],
   darkMode: 'class',
   theme: {
     extend: {
