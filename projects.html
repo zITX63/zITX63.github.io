@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>项目作品 · 大豆包.dev</title>
+  <title>项目作品 · ITX.dev</title>
   <meta name="description" content="大豆包.dev 的项目作品集 —— 个人主页 / 天气小程序 / 开源组件库" />
 
   <!-- 本地 Tailwind 样式（和主页共用同一份 styles.css）
@@ -157,6 +157,74 @@
     /* 时间轴最后一块不再往下画线，否则末尾会拖一条多余的尾巴 */
     .intro-item:last-child .tl-line { display: none; }
 
+    /* ===== 文字区块：渐变毛玻璃 =====
+       盖在铺满整卡的封面图上，backdrop-filter 负责模糊背后的画面，
+       上面再叠一层从左上到右下的白色渐变，保证文字始终读得清。
+       ⚠️ backdrop-filter 需要父级有 isolation:isolate（见 L551 的 .isolate），
+          否则模糊会穿透到整页背景，效果不对。 */
+    .pj-glass {
+      background-image: linear-gradient(
+        135deg,
+        rgba(255,255,255,.86) 0%,
+        rgba(255,255,255,.70) 48%,
+        rgba(255,255,255,.54) 100%
+      );
+      backdrop-filter: blur(22px) saturate(165%);
+      -webkit-backdrop-filter: blur(22px) saturate(165%);
+      border-left: 1px solid rgba(255,255,255,.65);
+    }
+    .dark .pj-glass {
+      background-image: linear-gradient(
+        135deg,
+        rgba(2,6,23,.86) 0%,
+        rgba(2,6,23,.70) 48%,
+        rgba(2,6,23,.54) 100%
+      );
+      border-left-color: rgba(255,255,255,.12);
+    }
+    /* 没填封面图时背后只是纯色，模糊没有意义，直接还原成朴素分隔线 */
+    .pj-card:not(.has-cover) .pj-glass {
+      background-image: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-left: 1px solid rgb(226 232 240);
+    }
+    .dark .pj-card:not(.has-cover) .pj-glass { border-left-color: rgb(30 41 59); }
+
+    /* 「项目介绍」展开按钮那一行：整条宽度的毛玻璃 */
+    .pj-glass-bar {
+      background-image: linear-gradient(to right, rgba(255,255,255,.82), rgba(255,255,255,.60));
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+    }
+    .dark .pj-glass-bar {
+      background-image: linear-gradient(to right, rgba(2,6,23,.82), rgba(2,6,23,.60));
+    }
+    .pj-glass-bar:hover {
+      background-image: linear-gradient(to right, rgba(255,255,255,.94), rgba(255,255,255,.76));
+    }
+    .dark .pj-glass-bar:hover {
+      background-image: linear-gradient(to right, rgba(2,6,23,.94), rgba(2,6,23,.76));
+    }
+
+    /* 「项目介绍」内层面板：圆角玻璃，底下透出一点强调色 */
+    .pj-glass-soft {
+      background-image: linear-gradient(135deg, rgba(255,255,255,.82), rgba(255,255,255,.60));
+      backdrop-filter: blur(16px) saturate(155%);
+      -webkit-backdrop-filter: blur(16px) saturate(155%);
+    }
+    .dark .pj-glass-soft {
+      background-image: linear-gradient(135deg, rgba(2,6,23,.82), rgba(2,6,23,.60));
+    }
+
+    /* 同上：无封面图的卡片退回朴素样式，避免模糊穿透到整页背景 */
+    .pj-card:not(.has-cover) .pj-glass-bar,
+    .pj-card:not(.has-cover) .pj-glass-soft {
+      background-image: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
     /* 【无障碍】系统开启「减少动态效果」时关掉全部动画 */
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
@@ -186,7 +254,7 @@
   <!-- ===================== 顶栏（浮在首屏上，往下滚才变白底） ===================== -->
   <header id="siteHeader" class="site-header over-hero fixed top-0 inset-x-0 z-50 h-16">
     <nav class="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
-      <a href="index.html" class="h-brand font-bold text-lg tracking-tight">大豆包<span>.dev</span></a>
+      <a href="index.html" class="h-brand font-bold text-lg tracking-tight">ITX<span>.dev</span></a>
 
       <div class="flex items-center gap-3">
         <a href="index.html#projects"
@@ -223,7 +291,7 @@
         <p class="hero-in font-mono text-xs md:text-sm font-semibold tracking-[0.22em] uppercase text-cyan-300/80" style="animation-delay:.05s">// Selected Works</p>
         <h1 class="hero-in mt-4 text-4xl md:text-6xl font-extrabold tracking-tight" style="animation-delay:.15s">项目作品</h1>
         <p class="hero-in mt-5 max-w-2xl text-base md:text-lg text-slate-300 leading-relaxed" style="animation-delay:.25s">
-          这里是我做过的东西。有些是为了解决自己的问题，有些纯粹是想试试某个技术能做到什么程度。点开任意一张卡片，可以看它的设计稿与实拍截图。
+          这里是我做过的东西。有些是想自己做点实用的东西，有些纯粹是闲的没事做着玩。点开任意一张卡片，可以看它的设计稿与实拍截图。
         </p>
 
         <!-- 统计：数字由 JS 按项目数据自动算出来 -->
@@ -279,8 +347,8 @@
   <!-- ===================== 页脚 ===================== -->
   <footer class="border-t border-slate-200 dark:border-slate-800 py-8">
     <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-      <p>© 2026 大豆包 · 保留所有权利</p>
-      <p>用 <span class="text-red-500">♥</span>创造大豆包</p>
+      <p>© 2026 ITX · 保留所有权利</p>
+      <p>用 <span class="text-red-500">♥</span>创造</p>
     </div>
   </footer>
 
@@ -318,9 +386,14 @@
      *   1) 把图片放进  images/projects/  文件夹（文件名用英文小写，如 notes-cover.jpg）
      *   2) cover  : 封面大图，填 'images/projects/notes-cover.jpg'
      *      photos : 截图数组，可以放任意张，每张带一句 caption 说明
-     *   3) 没填或文件不存在 → 自动显示 emoji 占位块，不会出破图
+     *   3) 没填或文件不存在 → 自动显示 icon 占位块，不会出破图
      *
      * 字段说明：
+     *   icon   : 占位图标。两种写法都行，靠后缀自动判断：
+     *            ① 直接写 emoji 字符      → icon: '⛅'
+     *            ② 写图片路径（推荐）      → icon: 'images/projects/godot-logo.svg'
+     *              支持 .svg / .png / .jpg / .webp / .avif
+     *              只在没填 cover 时才显示（有封面图时卡片用封面图）
      *   cat    : 分类，用于顶部筛选按钮（同名会合并成一个按钮）
      *   accent : 这一张卡的配色，可选 'indigo' / 'emerald' / 'amber'（见下面的 ACCENTS）
      *            会同时影响封面渐变、标签、亮点勾、时间轴圆点、面板底色
@@ -338,11 +411,11 @@
         cat: 'Web',
         accent: 'indigo',
         no: '01',
-        title: '个人主页 · 大豆包.dev',
-        subtitle: '从零手写、自己部署上线的个人站点',
-        desc: 'HTML + TailwindCSS 手写，11 个板块、13 组交互（深色模式 / 留言板 / 游戏卡展开 / 导航指示块…），已部署在 GitHub Pages。',
+        title: '个人主页 · ITX.dev',
+        subtitle: '从零开始、利用AI部署上线的个人站点',
+        desc: 'HTML + TailwindCSS，11 个板块、13 组交互（深色模式 / 留言板 / 游戏卡展开 / 导航指示块…），已部署在 GitHub Pages。',
         cover: '',                                   // ← 例：'images/projects/site-cover.jpg'
-        emoji: '🌐',
+        icon: '🌐',
         status: '持续更新',
         year: '2026',
         tags: ['HTML / CSS', 'JavaScript', 'TailwindCSS', 'GitHub Pages'],
@@ -363,26 +436,26 @@
         /* ── 可编辑区域：项目介绍（展开后显示，五块都能单独改）─────────
            留空字符串 '' → 页面自动显示虚线占位框提示该写什么，不会留空白 */
         intro: {
-          bg:      '学了一阵子前端，想有个自己的地方放东西：我是谁、会点什么、读过什么书、玩过什么游戏。市面上的博客平台模板都长一个样，索性自己写一个。',
+          bg:      '研究了一小段时间前端，想有个自己的地方放东西：我是谁、会点什么、读过什么书、玩过什么游戏。市面上有很多博客平台，索性自己也写一个。',
           goal:    '一个页面讲清楚「我是谁、在学什么、做过什么」；手机电脑都好看；加载要快；最重要的是我自己能长期维护下去。',
-          process: '先用 AI 辅助生成初版框架，再自己逐行读、逐段改，直到每一行都能看懂。样式用 TailwindCSS，交互按小节一节节往上加（打字机、技能条、滚动浮现、点击计数、留言板、公告弹窗、导航指示块、游戏卡展开、头像自动切换）。最后把 Tailwind 从 CDN 换成本地预编译的 styles.css，用 Git 推到 GitHub Pages 上线。',
+          process: '使用AI进行制作，在此过程中让AI解释代码含义学习简单的前端操作。样式用 TailwindCSS，交互按小节一节节往上加（打字机、技能条、滚动浮现、点击计数、留言板、公告弹窗、导航指示块、游戏卡展开、头像自动切换）。最后把 Tailwind 从 CDN 换成本地预编译的 styles.css，用 Git 推到 GitHub Pages 上线。',
           hard:    '最折腾的是 Tailwind 本地化之后：新写的 class 必须重新构建 styles.css 才生效，它不报错、只是静悄悄没样式，排查了很久才发现是构建扫描范围的问题。另一个是深色模式刷新会白闪，把主题判断脚本提到 <head> 里同步执行才解决。',
           gain:    '第一次完整走通「写代码 → 构建 → 提交 → 上线」这条链路；也真正理解了性能优化和无障碍不是锦上添花，而是写完就该回头检查的东西。'
         }
       },
       {
-        cat: '小程序',
+        cat: '游戏',
         accent: 'emerald',
         no: '02',
-        title: '天气小程序',
-        subtitle: '简洁好用、带精美天气动画的预报工具',
-        desc: '接入第三方气象 API，做了请求缓存与失败兜底，弱网下也能显示上一次的数据。',
-        cover: '',
-        emoji: '⛅',
+        title: 'Godot小游戏',
+        subtitle: '使用Godot复刻作品',
+        desc: '使用Godot免费引擎，进行2d游戏的复刻进行学习如何使用引擎',
+        cover: 'images/projects/Godot1.jpg',   // ⚠️ 必须用正斜杠 /，不能写 Windows 的 \
+        icon:  '🎮',   // ← Godot 官方图标（占位时用，有 cover 时不显示）
         status: '已完成',
-        year: '2024',
-        tags: ['小程序', 'API', '动画'],
-        points: ['天气动效随实时数据变化（晴/雨/雪）', '请求缓存，弱网也能看到上次数据', '首屏加载 < 1 秒'],
+        year: '2026',
+        tags: ['2d', '小游戏', 'GDscript'],
+        points: ['Godot下载安装启动配置环境', '版本选择，模块化操作', '复刻网上的简单游戏'],
         photos: [
           // { src: 'images/projects/weather-1.jpg', caption: '首页' },
         ],
@@ -390,11 +463,11 @@
 
         /* ── 可编辑区域：项目介绍 ────────────────────────────────────── */
         intro: {
-          bg:      '想学小程序开发，就拿天气这种数据简单、但很考验界面表现力的题材来练手。',
-          goal:    '首屏加载 < 1 秒；天气状态用动画表达；弱网下也能看到上一次的数据。',
-          process: '接入第三方气象 API，用小程序自带的 storage 做缓存；动画用 CSS 关键帧实现，按天气码切换不同的图层。',
-          hard:    '第三方 API 偶尔超时，页面会白屏。加了请求缓存 + 失败兜底后，最差情况也能展示历史数据和一行提示。',
-          gain:    '理解了「网络请求一定要有降级方案」，也第一次体会到动画对体验的提升有多大。'
+          bg:      '想自己制作出一些自己的游戏，但是发现还有很多不会的东西，需要继续深入学习。',
+          goal:    '制作一个2d横板游戏，拥有较为完整的元素。',
+          process: '先跟随教程准备工具，然后跟随教程的每一步进行推进，最终完成复刻。',
+          hard:    '对于引擎的工具使用不熟悉，每个项目的准备工作不熟悉只能照搬操作，脚本语言不了解。',
+          gain:    '制作游戏需要完整的流程准备，项目中的每一个元素都要区分类管理，以及对编程能力也是有严格要求的。'
         }
       },
       {
@@ -405,7 +478,7 @@
         subtitle: '一套轻量级 Vue3 组件库',
         desc: 'GitHub 500+ Star。所有组件都支持深色模式与键盘操作，配了完整的单元测试。',
         cover: '',
-        emoji: '📦',
+        icon: '📦',
         status: '维护中',
         year: '2024',
         tags: ['Vue3', '开源', '单元测试'],
@@ -488,14 +561,35 @@
     function cardHTML(p, idx) {
       const ac = ACCENTS[p.accent] || ACCENTS.indigo;   // 这套配色会贯穿整张卡
       const hasCover = !!p.cover;
+      /* ── 背景层：封面图铺满「整张卡片」（全部长度），不再只占左侧 2/5 ──────
+         -z-10   → 压在所有内容底下
+         object-cover → 等比裁切填满，卡片多高图就多高
+         加载失败时会自动隐藏，露出 article 上的渐变底色（见 L551）        */
+      const bgLayer = hasCover ? `
+        <img data-fallback data-bg src="${p.cover}" alt="" aria-hidden="true"
+             class="absolute inset-0 -z-10 h-full w-full object-cover">
+        <div aria-hidden="true"
+             class="absolute inset-0 -z-10 bg-gradient-to-r from-slate-900/45 via-slate-900/30 to-slate-900/15"></div>` : '';
+
+      /* ── 左栏：有封面图时透明（透出背景），只压一个编号；
+            无封面图时退回 icon 渐变占位块 ─────────────────────────────── */
+      // icon 支持两种写法，按后缀自动判断：图片路径 → <img>，否则按 emoji 字符渲染
+      const isIconImg = /\.(svg|png|jpe?g|webp|avif)$/i.test(p.icon || '');
+      const iconHTML = isIconImg
+        ? `<img src="${p.icon}" alt="${p.title} 图标"
+                 class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,.35)]">`
+        : `<span class="text-5xl md:text-6xl">${p.icon || '📁'}</span>`;
+
       const cover = `
-        <div class="relative h-52 md:h-full min-h-[13rem] overflow-hidden bg-gradient-to-br ${ac.cover}">
-          <div data-placeholder class="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 ${hasCover ? 'hidden' : ''}">
-            <span class="text-5xl md:text-6xl">${p.emoji}</span>
-            <span class="mt-3 text-[11px] leading-relaxed text-white/70">${hasCover ? '封面图加载失败' : '封面图放这里<br>images/projects/…'}</span>
-          </div>
-          ${hasCover ? `<img data-fallback src="${p.cover}" alt="${p.title} 封面" loading="lazy" class="absolute inset-0 w-full h-full object-cover">` : ''}
-          <span class="absolute left-4 top-3 text-5xl font-extrabold text-white/25 select-none">${p.no}</span>
+        <div class="relative min-h-[13rem] md:min-h-[20rem] overflow-hidden">
+          ${hasCover ? '' : `
+            <div class="absolute inset-0 bg-gradient-to-br ${ac.cover}"></div>
+            <div data-placeholder class="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
+              ${iconHTML}
+              <span class="mt-3 text-[11px] leading-relaxed text-white/70">封面图放这里<br>images/projects/…</span>
+            </div>`}
+          <span class="absolute left-4 top-3 text-5xl md:text-6xl font-extrabold select-none
+                       ${hasCover ? 'text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,.55)]' : 'text-white/25'}">${p.no}</span>
         </div>`;
 
       const strip = p.photos.length ? `
@@ -516,9 +610,10 @@
       // 展开按钮：图标方块 + 双行标题 + 圆形加号（展开时旋转 45° 变叉号）
       // 面板内容：时间轴（不是主页那种朴素折叠条），五块逐条浮出
       const intro = p.intro ? `
-        <div class="border-t border-slate-200 dark:border-slate-800">
+        <div class="border-t ${hasCover ? 'border-white/50 dark:border-white/10 pj-glass-bar' : 'border-slate-200 dark:border-slate-800'}">
           <button data-intro aria-expanded="false" aria-controls="intro-${idx}"
-                  class="w-full flex items-center gap-3 px-6 md:px-8 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  class="w-full flex items-center gap-3 px-6 md:px-8 py-4 text-left transition-colors
+                         ${hasCover ? '' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}">
             <span class="grid place-items-center w-8 h-8 rounded-lg ${ac.chip} text-sm shrink-0" aria-hidden="true">📖</span>
             <span class="flex-1">
               <span class="block text-sm font-semibold">项目介绍</span>
@@ -533,7 +628,7 @@
         <div id="intro-${idx}" class="pj-detail">
           <div>
             <div class="px-6 md:px-8 pb-7">
-              <div class="rounded-2xl border ${ac.edge} ${ac.tint} p-5 md:p-6">
+              <div class="rounded-2xl border ${ac.edge} ${ac.tint} p-5 md:p-6 ${hasCover ? 'pj-glass-soft' : ''}">
                 <p class="text-[11px] text-slate-400 mb-4">✏️ 下面每一块都能单独改：projects.html → 第 2 节 → 这个项目的 intro</p>
                 <ol>
                   ${introBlock('背景 · 为什么做',         p.intro.bg,      '这个项目的起因，一两句话', ac)}
@@ -548,12 +643,15 @@
         </div>` : '';
 
       return `
-        <article class="pj-card reveal group rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300"
+        <article class="pj-card reveal group relative isolate rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300
+                        ${hasCover ? 'has-cover bg-gradient-to-br ' + ac.cover : 'bg-white dark:bg-slate-900'}"
                  data-cat="${p.cat}">
-          <div class="grid md:grid-cols-5">
+          ${bgLayer}
+
+          <div class="relative grid md:grid-cols-5">
             <div class="md:col-span-2">${cover}</div>
 
-            <div class="md:col-span-3 p-6 md:p-8">
+            <div class="md:col-span-3 p-6 md:p-8 pj-glass">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <span class="text-xs font-semibold ${ac.text} tracking-wider">${p.cat} · ${p.year}</span>

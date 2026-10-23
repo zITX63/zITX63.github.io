@@ -73,7 +73,10 @@ for (const c of custom) hooks.delete(c);
 const missing = [];
 const hooksUsed = [];
 for (const n of names) {
-  const esc = n.replace(/[[\]\\/.:#%!(),]/g, ch => '\\' + ch);
+  // 注意：Tailwind 输出里普通符号是 \x 形式转义，但逗号会转成 \2c（十六进制 + 一个空格收尾），
+  // 所以逗号必须单独先换掉，否则含逗号的任意值类（如 drop-shadow-[0_2px_8px_rgba(0,0,0,.35)]）会被误报成"缺少样式"。
+  // ⚠️ 顺序不能反：先转义普通符号，再换逗号（否则后面那步会把逗号替换结果里的反斜杠又转义一遍）
+  const esc = n.replace(/[[\]\\/.:#%!()]/g, ch => '\\' + ch).replace(/,/g, '\\2c ');
   if (css.includes('.' + esc) || css.includes(esc) || custom.has(n)) continue;
   if (hooks.has(n)) hooksUsed.push(n);
   else missing.push(n);
