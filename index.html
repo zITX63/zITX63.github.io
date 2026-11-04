@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>大豆包的个人主页</title>
-  <meta name="description" content="大豆包 —— 个人网页新人 / 游戏爱好者 / 终身学习者" />
+  <title>ITX 的个人主页</title>
+  <meta name="description" content="ITX —— 个人网页新人 / 游戏爱好者 / 终身学习者" />
   <!-- 本地 Tailwind 样式（预编译产物，20.8KB）
        新增从未用过的 Tailwind class 后需重建：双击 build-css.bat
        开发时想省事可双击 dev-watch.bat，改完自动重建 -->
@@ -91,7 +91,7 @@
 
     <!-- 这是导航栏 -->
     <nav class="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
-      <a href="#home" class="font-bold text-lg tracking-tight">大豆包<span class="text-indigo-500">.dev</span></a>
+      <a href="#home" class="font-bold text-lg tracking-tight">ITX<span class="text-indigo-500">.dev</span></a>
       <ul id="navList" class="relative hidden md:flex items-center gap-1 text-sm font-medium">
         <li id="navPill" aria-hidden="true" class="pointer-events-none absolute left-0 top-0 h-full rounded-full bg-indigo-600 opacity-0"></li>
         <li><a class="nav-link relative z-[1] px-4 py-2 rounded-full hover:text-indigo-500 transition-colors" href="#about">关于</a></li>
@@ -354,7 +354,20 @@
     <!-- 这是游戏区 -->
     <div class="max-w-5xl mx-auto px-6">
       <h2 class="reveal text-3xl font-bold mb-3">我的游戏</h2>
-      <p class="reveal text-indigo-500 font-medium mb-10">Game List</p>
+      <p class="reveal text-indigo-500 font-medium mb-4">Game List</p>
+
+      <!-- ↓ 游戏二级页面入口：3D 转盘卡片 + 截图浏览（games.html） -->
+      <div class="reveal mb-10">
+        <a href="games.html"
+           class="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold
+                  text-white bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700
+                  shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+          <span class="text-base">🕹️</span>
+          进入游戏库 · 转盘浏览
+          <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+        </a>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">转动转盘挑一张卡，点开看简介与截图</p>
+      </div>
 
   <div class="space-y-4">
 
@@ -588,8 +601,8 @@
   <footer class="border-t border-slate-200 dark:border-slate-800 py-8">
     <!-- 这是页脚区 -->
     <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-      <p>© 2026 大豆包 · 保留所有权利</p>
-      <p>用 <span class="text-red-500">♥</span>创造大豆包</p>
+      <p>© 2026 ITX · 保留所有权利</p>
+      <p>用 <span class="text-red-500">♥</span>创造</p>
     </div>
   </footer>
 
@@ -663,10 +676,11 @@
 
   /* ---------- 5. 项目数据渲染（改这个数组即可） ---------- */
   const projects = [
-    // link 填 '#' 表示还没上线；这里指向站内项目页，看详情更方便
-    { title: '个人主页 · 大豆包.dev', desc: 'HTML + TailwindCSS 手写，含深色模式与留言板，已上线 GitHub Pages', tags: ['HTML / CSS', 'TailwindCSS'], emoji: '🌐', link: 'projects.html' },
-    { title: '天气小程序', desc: '简洁美观的天气预报，内置精美动画', tags: ['小程序', 'API'], emoji: '⛅', link: '#' },
-    { title: '开源组件库', desc: '一套轻量级 Vue3 组件库，GitHub 500+ Star', tags: ['Vue3', '开源'], emoji: '📦', link: '#' },
+    // ⚠️ 数据与 projects.html（项目作品页）保持同步：改那边记得同步这边
+    // link 填 '#' 表示还没上线；卡片可进项目页看详情
+    { title: '个人主页 · ITX.dev', desc: 'HTML + TailwindCSS，11 个板块、13 组交互（深色模式 / 留言板 / 游戏卡展开 / 导航指示块…），已部署在 GitHub Pages。', tags: ['HTML / CSS', 'JavaScript', 'TailwindCSS', 'GitHub Pages'], emoji: '🌐', link: 'projects.html' },
+    { title: 'Godot小游戏', desc: '使用Godot免费引擎，进行2d游戏的复刻进行学习如何使用引擎', tags: ['2d', '小游戏', 'GDscript'], emoji: '🎮', link: '#' },
+    { title: '开源组件库', desc: 'GitHub 500+ Star。所有组件都支持深色模式与键盘操作，配了完整的单元测试。', tags: ['Vue3', '开源', '单元测试'], emoji: '📦', link: '#' },
   ];
   document.getElementById('projectGrid').innerHTML = projects.map(p => `
     <a href="${p.link}" class="reveal group block rounded-2xl bg-white dark:bg-slate-900 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
