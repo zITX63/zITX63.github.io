@@ -11,6 +11,15 @@
        街机霓虹主题（与项目页的蓝图 + 毛玻璃风格刻意区分）
        固定深色：霓虹只有在暗底上才出效果，本页不提供浅色切换
        ========================================================== */
+    /* 开合动画统一时间轴：所有会动的属性共用一条时长 + 一条缓动曲线。
+       之前 width/height .6s、翻盖 .85s、舞台高度 .55s 三条不同步，
+       盒子已经撑开而封面还在翻 → 中途出现明显的画面挤压 / 错位。 */
+    :root {
+      --flip: .78s;
+      /* 对称 ease-in-out：让翻盖最快掠过 90°（透视压缩最强的一瞬），
+         而不是像原来 ease-out 那样在末尾慢慢蹭过去 */
+      --flip-ease: cubic-bezier(.55, .06, .28, 1);
+    }
     html { scroll-behavior: smooth; }
     body {
       background: #07060f;
@@ -102,15 +111,21 @@
     /* ---------- 3D 转盘舞台 ---------- */
     .stage {
       position: relative;
-      height: 500px;
-      perspective: 1600px;
+      /* 🔵 固定高度：开盒不再改变舞台高度。原来 500 → 680 会把整页往下推，
+         叠加 smooth scroll 后就是「画面被挤一下」的主要来源。 */
+      height: min(620px, 78vh);
+      /* 透视拉远：1600px 时翻盖经过 90° 会被强烈透视压缩成梯形（画面挤压感），
+         2600px 后翻页更接近平转，仍保留轻微立体感 */
+      perspective: 3600px;
       perspective-origin: 50% 45%;
       touch-action: pan-y;
-      transition: height .55s cubic-bezier(.22,.61,.36,1);
     }
-    .stage.open { height: 680px; }
+    /* .stage.open 仍由 JS 加上（用于样式钩子），但不再改任何布局尺寸 */
     #ring {
-      position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+      position: absolute; left: 50%; width: 0; height: 0;
+      /* 舞台固定 620 高后，40% × 620 = 248 ≈ 原来 50% × 500 = 250：
+         关盒时转盘卡片仍停在原来的视觉高度，不会整体下沉 */
+      top: 40%;
       transform-style: preserve-3d;
     }
 
@@ -124,23 +139,20 @@
       --pageW: 272px;
       --cardH: 366px;
       --caseW: var(--pageW);
-      --r: 24px;                 /* 盒角半径：统一由它控制，改一个数全盒生效 */
-      /* 开盒时盒壳的内衬边 / 中缝宽。关盒时都为 0（两页完全重叠，就是整块盒子） */
-      --edge: 0px;               /* 盒壳四周露出的沿宽 */
-      --spine: 0px;              /* 两页之间留给盒脊的距离 */
-      /* 盒壳与两页共用同一块底色（纯竖直渐变）：两页、盒脊、盒沿是同一个材质，
-         开盒后看起来才是一只盒子，而不是几块拼起来的板 */
+      --r: 28px;                 /* 盒角半径：统一由它控制，改一个数全盒生效。
+                                    920px 宽的摊开盒用 28px 才读得出圆角，24px 偏尖 */
+      /* 两页共用同一块底色（纯竖直渐变）：中缝处颜色完全一致，摊开就是一整块，没有拼缝色差 */
       --case-bg: linear-gradient(to bottom, #1b1536 0%, #100c22 52%, #0a0716 100%);
       position: absolute; left: 0; top: 0;
       width: var(--caseW); height: var(--cardH);
       cursor: pointer;
       /* ⚠️ 这里不能写 overflow:hidden —— 会把 transform-style 压成 flat，开盒的 3D 就废了 */
       transform-style: preserve-3d;
-      /* 圆角过渡：开盒时盒宽翻倍，半径不变容易显突兀，交给 transform 承担即可 */
+      /* 盒宽 / 盒高 / 翻盖 / 圆角全部同一条时间轴，不再各跑各的 */
       transition:
-        transform .7s cubic-bezier(.22,.61,.36,1),
-        width .6s cubic-bezier(.22,.61,.36,1),
-        height .6s cubic-bezier(.22,.61,.36,1),
+        transform var(--flip) var(--flip-ease),
+        width var(--flip) var(--flip-ease),
+        height var(--flip) var(--flip-ease),
         opacity .45s ease;
       will-change: transform;
     }
@@ -149,76 +161,80 @@
     .gc.open {
       /* 42vw 上限：中等屏（768~1100px）盒子不会顶到屏幕边缘 */
       --pageW: min(460px, 42vw);
+      /* 高度保持 600：内容有足够呼吸空间，不再靠压缩页面来「塞进」视口。
+         视口不够高时由 openCard() 在翻盖前瞬时对齐一次滚动位置 */
       --cardH: min(600px, 84vh);
-      /* 盒子总宽 = 两页 + 中缝 + 左右两侧的盒沿 */
-      --edge: 12px;
-      --spine: 34px;
-      --caseW: calc(var(--pageW) * 2 + var(--spine) + var(--edge) * 2);
+      /* 摊开后就是两页严丝合缝拼在一起，中缝无间隙、无盒沿 */
+      --caseW: calc(var(--pageW) * 2);
       cursor: default;
       z-index: 999 !important;
     }
 
-    /* ---------- 盒壳（开盒后露出的盒子本体） ----------
-       两页是「镶在盒壳里的两块托盘」，各自与盒壳外缘留出 --edge 的沿、
-       与中缝留出 --spine 的距离。所有内容都在两页内部，盒沿与盒脊只压在
-       盒壳上，从结构上就不可能挡住内容。 */
-    .case-floor {
-      position: absolute; inset: 0;
-      border-radius: var(--r);
-      background:
-        /* 中缝两侧的凹陷：只在盒壳上，压不到两页 */
-        linear-gradient(90deg,
-          transparent calc(50% - 92px),
-          rgba(0,0,0,.22) calc(50% - 40px),
-          rgba(0,0,0,.55) 50%,
-          rgba(0,0,0,.22) calc(50% + 40px),
-          transparent calc(50% + 92px)),
-        var(--case-bg);
-      /* 盒沿三层：外缘亮线 → 8px 塑料沿面 → 12px 处收回内衬（留 4px 暗缝当凹槽）。
-         全部贴在盒壳最外圈，两页从 12px 处才开始，结构上压不到内容。
-         ⚠️ 这里不能加「大范围外阴影」：preserve-3d 里带大模糊外阴影的图层会
-         被拆成多块重绘，右页内容会横向错位/重影（无头截图可稳定复现）。 */
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.24),
-        inset 0 0 0 9px rgba(255,255,255,.07),
-        inset 0 0 22px 12px rgba(0,0,0,.55);
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0;
-      transition: opacity .45s ease;
-    }
-    .gc.open .case-floor { opacity: 1; }
-
     /* ---------- 盒底 = 右页（内页图 + 文字介绍） ---------- */
     .case-base {
       position: absolute;
-      top: var(--edge); right: var(--edge);
-      height: calc(100% - var(--edge) * 2);
+      top: 0; right: 0;
+      height: 100%;
       width: var(--pageW);
-      /* 现在是「镶在盒壳里的托盘」：四角都圆，四周与盒沿留出距离 */
-      border-radius: var(--r);
-      clip-path: inset(0 round var(--r));
+      /* 外缘两角圆、中缝侧直角：摊开后与左页严丝合缝拼成一整块盒子 */
+      border-radius: 0 var(--r) var(--r) 0;
+      clip-path: inset(0 round 0 var(--r) var(--r) 0);
       overflow: hidden;
       background: var(--case-bg);
+      /* 只描外缘：四面都描边时中缝会叠出两条 1px 竖线 */
       border: 1px solid rgba(255,255,255,.12);
+      border-left: 0;
       opacity: 1;
+      /* 🔵 圆角跟着翻盖一起过渡：关盒四角全圆 → 摊开后中缝侧变直角。
+         原来半径是瞬间跳变的，翻盖途中中缝两角会冒出方形色块（裸露的多余部分）。 */
+      transition:
+        border-radius var(--flip) var(--flip-ease),
+        clip-path var(--flip) var(--flip-ease);
     }
     /* 🔴 关盒时这一页就是「整个盒底」，四角必须都是圆角。
        它和封面同尺寸叠在下面；封面是圆角，圆弧外侧那一小块没有遮挡 →
        露出它的直角 + 内页横幅的颜色，看起来就像「盒子角上多出一块方形色块」。
-       只在动画结束后隐藏不够：关盒动画的前 0.85s 它仍然亮着，照样从圆角外侧漏。
+       只在动画结束后隐藏不够：关盒动画的前一个 --flip 它仍然亮着，照样从圆角外侧漏。
        所以先把它改成四角圆角（与封面弧线重合，完全看不出），再按原计划延迟隐藏。 */
     .gc:not(.open) .case-base {
+      border-radius: var(--r);
+      clip-path: inset(0 round var(--r));
       opacity: 0;
-      transition: opacity 0s linear .85s;
+      transition:
+        border-radius var(--flip) var(--flip-ease),
+        clip-path var(--flip) var(--flip-ease),
+        opacity 0s linear var(--flip);
     }
     .page-inner { height: 100%; overflow-y: auto; }
-    .inside-banner { height: 132px; overflow: hidden; position: relative; }
+    /* ---------- 右页顶部横幅 ----------
+       默认裁成 132px 横条；点右下角「下拉」按钮展开成按原图比例的完整画面。
+       展开高度由 JS 按 naturalWidth/Height 算好后写进 --fullH。 */
+    .inside-banner {
+      height: 132px; overflow: hidden; position: relative; background: #0d0a20;
+      transition: height .45s cubic-bezier(.22,.61,.36,1);
+    }
     .inside-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .inside-banner::after {
-      content: ""; position: absolute; inset: 0;
+      content: ""; position: absolute; inset: 0; pointer-events: none;
       background: linear-gradient(to top, #17112e 0%, transparent 70%);   /* 收尾色 = 该高度上的页面底色，横幅与页面无缝 */
+      transition: opacity .4s ease;
     }
+    .inside-banner.expanded { height: var(--fullH, 260px); }
+    .inside-banner.expanded img { object-fit: contain; }   /* 整张图都看得见，不裁切 */
+    .inside-banner.expanded::after { opacity: 0; }          /* 展开后去掉压暗渐变 */
+    .banner-toggle {
+      position: absolute; right: 12px; bottom: 10px; z-index: 2;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 999px; cursor: pointer;
+      font-size: .68rem; letter-spacing: .04em; color: #fff;
+      background: rgba(10,8,24,.82); border: 1px solid rgba(255,255,255,.3);
+      transition: background .25s, border-color .25s;
+    }
+    .banner-toggle:hover, .banner-toggle:focus-visible {
+      background: rgba(34,211,238,.28); border-color: #22d3ee; outline: none;
+    }
+    .banner-toggle .chev { font-size: .8rem; line-height: 1; transition: transform .4s ease; }
+    .inside-banner.expanded .banner-toggle .chev { transform: rotate(180deg); }
     .page-body { padding: 14px 18px 18px; }
     .gc-desc { font-size: .84rem; line-height: 1.75; color: rgba(233,232,247,.82); }
     .gc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
@@ -232,9 +248,22 @@
       font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
       color: rgba(233,232,247,.5); margin: 16px 0 8px;
     }
-    .thumbs { display: flex; flex-wrap: wrap; gap: 9px; }
+    /* ---------- 照片履带 ----------
+       一条可横向滚动的胶片：拖 / 滚轮 / 两枚箭头都能翻，scroll-snap 逐张吸附。
+       格数不限，往 GAMES 的 photos 里加几张就自动多几格。 */
+    .filmstrip { position: relative; }
+    .film-track {
+      display: flex; gap: 9px; overflow-x: auto; overflow-y: hidden;
+      /* ① 不用 scroll-snap：照片少时可滚距离常常不足一格，snap 会把翻页
+            又吸回起点（表现为「箭头点了没反应」）。
+         ② 这里也不要写 scroll-behavior:smooth，否则连 scrollLeft 直接赋值
+            都会变成异步动画（滚轮横移会飘）。平滑只由箭头 scrollTo 显式指定。 */
+      scrollbar-width: none; -ms-overflow-style: none; padding: 3px 2px 10px;
+    }
+    .film-track::-webkit-scrollbar { display: none; }
     .thumb {
-      width: 118px; height: 74px; border-radius: 10px; overflow: hidden;
+      position: relative; flex: 0 0 132px; width: 132px; height: 80px;
+      border-radius: 10px; overflow: hidden;
       border: 1px solid rgba(255,255,255,.14); background: #14102a;
       cursor: pointer; padding: 0;
       transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
@@ -244,6 +273,24 @@
       box-shadow: 0 8px 20px -6px var(--accent); outline: none;
     }
     .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-tag {
+      position: absolute; left: 0; bottom: 0; pointer-events: none;
+      font-size: .58rem; padding: 2px 5px; color: rgba(255,255,255,.88);
+      background: rgba(10,8,24,.82); border-top-right-radius: 6px;
+    }
+    .film-nav {
+      position: absolute; top: 40px; z-index: 3;
+      width: 27px; height: 27px; border-radius: 999px;
+      display: grid; place-items: center; cursor: pointer;
+      font-size: 1.05rem; line-height: 1; color: #fff;
+      background: rgba(10,8,24,.9); border: 1px solid rgba(255,255,255,.28);
+      transition: background .25s, border-color .25s, opacity .25s;
+    }
+    .film-nav:hover:not(:disabled) { background: rgba(34,211,238,.28); border-color: #22d3ee; }
+    .film-nav.prev { left: -9px; } .film-nav.next { right: -9px; }
+    .film-nav:disabled { opacity: .22; cursor: default; }
+    .film-hint { font-size: .62rem; color: rgba(233,232,247,.4); margin-left: 8px; letter-spacing: 0; }
+    .film-pos { color: var(--accent); margin-left: 6px; }
     .gc-close {
       /* sticky：内容再长，合盒按钮也一直贴在内页底部 */
       position: sticky; bottom: 0;
@@ -260,12 +307,12 @@
     /* ---------- 封面（铰链在左缘，开盒翻到左边） ---------- */
     .case-cover {
       position: absolute;
-      top: var(--edge); right: calc(var(--edge) + var(--spine));
+      top: 0; right: 0;
       width: var(--pageW);
-      height: calc(100% - var(--edge) * 2);
+      height: 100%;
       transform-origin: left center;
       transform-style: preserve-3d;
-      transition: transform .85s cubic-bezier(.3,.7,.25,1);
+      transition: transform var(--flip) var(--flip-ease);
       z-index: 2;
     }
     .gc.open .case-cover { transform: rotateY(-180deg); }
@@ -293,9 +340,12 @@
       position: absolute; inset: 0;
       /* 第一层 = 盒脊（左侧 11px 竖带），第二层 = 整体压暗。
          盒脊不做独立元素（独立小图层在圆角处会漏裁、角上留方角），
-         并进同一张底图，跟着盒子一起裁。 */
+         并进同一张底图，跟着盒子一起裁。
+         🔵 竖带上下各内收一个 --r：以前通到顶/底，被圆角斜切后会在
+         左上、左下角留下一块深色斜角（就是「裸露在外的多余部分」）。 */
       background:
-        linear-gradient(90deg, rgba(0,0,0,.75), rgba(255,255,255,.12) 55%, rgba(0,0,0,.35)) left top / 11px 100% no-repeat,
+        linear-gradient(90deg, rgba(0,0,0,.75), rgba(255,255,255,.12) 55%, rgba(0,0,0,.35))
+          left center / 11px calc(100% - var(--r) * 2) no-repeat,
         linear-gradient(to top, rgba(5,4,12,.96) 0%, rgba(5,4,12,.42) 46%, rgba(5,4,12,.08) 100%);
     }
     .gc-no {
@@ -321,57 +371,28 @@
     }
 
     /* 封面背面 = 左页（光盘）
-       与右页一样是「镶在盒壳里的托盘」，四角都圆 */
+       左外缘两角圆、中缝侧直角，与右页拼起来是完整盒形 */
     .case-back {
       transform: rotateY(180deg);
-      border-radius: var(--r);
-      clip-path: inset(0 round var(--r));
+      border-radius: var(--r) 0 0 var(--r);
+      clip-path: inset(0 round var(--r) 0 0 var(--r));
       background: var(--case-bg);
       border: 1px solid rgba(255,255,255,.12);
+      border-right: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 14px; padding: 22px; text-align: center;
       cursor: pointer;
+      transition:
+        border-radius var(--flip) var(--flip-ease),
+        clip-path var(--flip) var(--flip-ease);
     }
-    /* ---------- 盒脊：开盒后两页之间的连接处（只在开盒时出现） ----------
-       关盒时两页完全重叠，这条脊如果跟着画会在封面正中间多一道竖条，
-       所以只在 .gc.open 时淡入；开盒瞬间盒子正在变宽，延迟 0.28s 等它展开再出现。 */
-    .case-hinge {
-      position: absolute;
-      /* 中缝夹在左右两页之间、且左右盒沿等宽 → 中缝中心永远落在 50% */
-      left: 50%;
-      /* 脊比中缝窄 14px（左右各留 7px 空隙），两页不再顶着脊，脊也不会压到页面内容 */
-      width: 20px; margin-left: -10px;
-      top: calc(var(--edge) + 6px);
-      height: calc(100% - (var(--edge) + 6px) * 2);
-      z-index: 3; transform: translateZ(3px);   /* 压在两页之上，但仍在盒子平面里 */
-      pointer-events: none;
-      opacity: 0;
-      border-radius: 4px;
-      background:
-        /* ① 上下两端收暗：像塑料件收边，不至于是一条通到底的色带 */
-        linear-gradient(180deg,
-          rgba(0,0,0,.55) 0%, rgba(0,0,0,.14) 9%, transparent 24%,
-          transparent 76%, rgba(0,0,0,.14) 91%, rgba(0,0,0,.55) 100%),
-        /* ② 脊面横截面：两条外侧棱线是光的，中间一道折痕压暗。
-             脊要比两页亮一档，才像凸起来的塑料件而不是一条黑洞 */
-        linear-gradient(90deg,
-          rgba(255,255,255,.20) 0 1px,
-          rgba(255,255,255,.05) 1px 3px,
-          rgba(0,0,0,.22) 48%,
-          rgba(255,255,255,.05) calc(100% - 3px) calc(100% - 1px),
-          rgba(255,255,255,.20) calc(100% - 1px) 100%),
-        /* ③ 脊的底色：比两页亮少许，太亮会变成一根显眼的柱子 */
-        linear-gradient(180deg, #322a58 0%, #262046 48%, #171130 100%);
-      box-shadow:
-        0 10px 22px -8px rgba(0,0,0,.75),      /* 外投影：脊是浮在两页之间的 */
-        inset 0 0 16px rgba(0,0,0,.32);
-      transition: opacity .45s ease;
+    /* 关盒时这一面看不见，但翻盖途中会扫过盒角：让它也全程四角圆，
+       摊开后才收成中缝侧直角，避免翻转中在四角甩出方形多余部分 */
+    .gc:not(.open) .case-back {
+      border-radius: var(--r);
+      clip-path: inset(0 round var(--r));
     }
-    /* 折页阴影不再用 ::before/::after 伸到两页上（那会压暗页面内容），
-       改由 .case-floor 的横向渐变承担：中缝的凹陷只画在盒壳上。 */
-    .gc.open .case-hinge { opacity: 1; transition-delay: .28s; }
-
     .disc {
       position: relative;
       /* 放大到 74%（上限 276px）：开盒时左右各留约 70px，不会碰到盒边 */
@@ -449,22 +470,21 @@
 
     /* ---------- 移动端 ---------- */
     @media (max-width: 768px) {
-      .stage { height: 420px; perspective: 1200px; }
-      .stage.open { height: 640px; }
+      /* 舞台高度沿用全局固定值，开合不推页面；只把透视收近一点保留立体感 */
+      .stage { perspective: 2000px; }
       .gc { --pageW: 224px; --cardH: 306px; }
-      .gc.open { --pageW: 40vw; --cardH: min(560px, 80vh); --edge: 6px; --spine: 20px; }
+      .gc.open { --pageW: 40vw; --cardH: min(560px, 78vh); }
       .gc-stats { grid-template-columns: 1fr; }
-      .thumb { width: 96px; height: 62px; }
+      .thumb { flex-basis: 104px; width: 104px; height: 64px; }
+      .film-nav { top: 32px; }
       .inside-banner { height: 104px; }
       .page-body { padding: 12px 13px 14px; }
       .disc { width: 78%; }
-      /* 手机页更窄，脊收窄一点，否则中缝会把两页挤得没有内容空间 */
-      .case-hinge { width: 12px; margin-left: -6px; }
     }
 
     /* ---------- 减少动画偏好 ---------- */
     @media (prefers-reduced-motion: reduce) {
-      .gc, .case-cover, .stage { transition-duration: .01ms !important; }
+      .gc, .case-cover, .case-base, .case-back, .stage, .inside-banner { transition-duration: .01ms !important; }
       .arcade-horizon, .scanlines::after, .disc, .arcade-drift svg { animation: none; }
       html { scroll-behavior: auto; }
     }
@@ -525,9 +545,9 @@
         我的游戏库 —— 转动转盘挑一盒，点开光盘盒看介绍与截图，再点一下合上。
       </p>
       <div class="mt-8 flex flex-wrap justify-center gap-3 text-xs">
-        <span class="px-4 py-2 rounded-full bg-white/5 border border-white/10">🎮 <b class="text-white">4</b> 款游戏</span>
-        <span class="px-4 py-2 rounded-full bg-white/5 border border-white/10">🖼️ <b class="text-white">8</b> 张截图</span>
-        <span class="px-4 py-2 rounded-full bg-white/5 border border-white/10">💿 <b class="text-white">4</b> 张光盘</span>
+        <span class="px-4 py-2 rounded-full bg-white/5 border border-white/10">🎮 <b class="text-white" id="gameCount">4</b> 款游戏</span>
+        <span class="px-4 py-2 rounded-full bg-white/5 border border-white/10">🖼️ <b class="text-white" id="shotCount">8</b> 张照片</span>
+        <span class="px-4 py-2 rounded-full bg-white/5 border border-white/10">💿 <b class="text-white" id="discCount">4</b> 张光盘</span>
       </div>
     </section>
 
@@ -582,7 +602,10 @@
          cover : 盒面图 —— 转盘上看到的封面
          disc  : 光盘面图 —— 开盒后左页那张圆形光盘
          inside: 内页横幅图 —— 开盒后右页顶部的横图
-         photos: 截图数组 —— 右页缩略图，点开进灯箱左右翻
+         photos: 截图数组 —— 进右页「照片履带」，点开进灯箱左右翻。
+                 ★ 想看更多照片就往这个数组里继续加 { src, caption }，
+                   加几张履带就自动多几格，顶部「张照片」计数也会自己变。
+                   封面 / 光盘面 / 内页横幅会自动一并进履带（同图自动去重）。
        ========================================================== */
     const GAMES = [
       {
@@ -592,17 +615,17 @@
         desc: '卡普空的生存恐怖招牌系列。从 1996 年洋馆事件开始，围绕生化病毒、保护伞公司与多代主角展开。系列在“恐怖”与“动作”之间反复摇摆，每一代都是一次方向实验——正因如此，每一代都有忠实拥趸。',
         accent: '#ff2d55',
         icon: '🧟',
-        cover: 'images/RE-封面.jpg',
-        disc: 'images/RE-封面2.jpg',
-        inside: 'images/RE-2.jpg',
+        cover: 'images/RE/RE-封面.jpg',
+        disc: 'images/RE/RE-封面2.jpg',
+        inside: 'images/RE/RE-2.jpg',
         stats: [
           { k: '入坑年份', v: '2023' },
           { k: '最推荐', v: 'RE4 重制' },
           { k: '最喜欢的角色', v: '里昂·斯科特·肯尼迪' },
         ],
         photos: [
-          { src: 'images/RE-1.jpg', caption: '《生化危机》游戏截图 1' },
-          { src: 'images/RE-2.jpg', caption: '《生化危机》游戏截图 2' },
+          { src: 'images/RE/RE-1.jpg', caption: '《生化危机》游戏截图 1' },
+          { src: 'images/RE/RE-2.jpg', caption: '《生化危机》游戏截图 2' },
         ],
       },
       {
@@ -612,17 +635,17 @@
         desc: '格斗游戏正统续作。新加入的“现代操作模式”让新手能快速打出一套连招，而 Drive 系统又给高手留足了深度。主玩 Cammy——她的快速接近压制打法最对我的节奏。',
         accent: '#f5d90a',
         icon: '🥊',
-        cover: 'images/SF6-1.jpg',
-        disc: 'images/SF6-1.jpg',
-        inside: 'images/SF6-2.jpg',
+        cover: 'images/SF6/SF6-1.jpg',
+        disc: 'images/SF6/SF6-1.jpg',
+        inside: 'images/SF6/SF6-2.jpg',
         stats: [
           { k: '主玩角色', v: 'Cammy' },
           { k: '常用模式', v: '经典模式' },
           { k: '练习方式', v: '训练场' },
         ],
         photos: [
-          { src: 'images/SF6-1.jpg', caption: '《SF6》游戏截图 1' },
-          { src: 'images/SF6-2.jpg', caption: '《SF6》游戏截图 2' },
+          { src: 'images/SF6/SF6-1.jpg', caption: '《SF6》游戏截图 1' },
+          { src: 'images/SF6/SF6-2.jpg', caption: '《SF6》游戏截图 2' },
         ],
       },
       {
@@ -632,17 +655,17 @@
         desc: '改编自同名小说的末日废土 FPS。核战后的莫斯科，人类残存在地铁隧道里，地表是辐射与变异生物。跟着阿尔乔姆从 2033 一路走到离去——最难忘的始终是第一次踏出隧道、戴上防毒面具看地表的那一刻。',
         accent: '#22d3ee',
         icon: '🚇',
-        cover: 'images/MTD-1.jpg',
-        disc: 'images/MTD-1.jpg',
-        inside: 'images/MTD-2.jpg',
+        cover: 'images/MTD/MTD-1.jpg',
+        disc: 'images/MTD/MTD-1.jpg',
+        inside: 'images/MTD/MTD-2.jpg',
         stats: [
           { k: '三部曲', v: '2033 / 最后曙光 / 离去' },
           { k: '主角', v: '阿尔乔姆' },
           { k: '最难忘', v: '首次上地表' },
         ],
         photos: [
-          { src: 'images/MTD-1.jpg', caption: '《Metro》游戏截图 1' },
-          { src: 'images/MTD-2.jpg', caption: '《Metro》游戏截图 2' },
+          { src: 'images/MTD/MTD-1.jpg', caption: '《Metro》游戏截图 1' },
+          { src: 'images/MTD/MTD-2.jpg', caption: '《Metro》游戏截图 2' },
         ],
       },
       {
@@ -652,17 +675,53 @@
         desc: '十年老兵。从生存模式的第一个夜晚，到后来的红石机械与大型建筑，它给我的从来不只是游戏——而是一个“想造什么就造什么”的世界。第一次挖到钻石的那个坐标，我到现在还记得。',
         accent: '#4ade80',
         icon: '⛏️',
-        cover: 'images/MC-1.jpg',
-        disc: 'images/MC-1.jpg',
-        inside: 'images/MC-2.jpg',
+        cover: 'images/MC/MC-1.jpg',
+        disc: 'images/MC/MC-1.jpg',
+        inside: 'images/MC/MC-2.jpg',
         stats: [
           { k: '游玩年限', v: '10 年' },
           { k: '最爱模式', v: '生存 + 红石' },
           { k: '代表记忆', v: '首次挖到钻石' },
         ],
         photos: [
-          { src: 'images/MC-1.jpg', caption: '《Minecraft》游戏截图 1' },
-          { src: 'images/MC-2.jpg', caption: '《Minecraft》游戏截图 2' },
+          { src: 'images/MC/MC-1.jpg', caption: '《Minecraft》游戏截图 1' },
+          { src: 'images/MC/MC-2.jpg', caption: '《Minecraft》游戏截图 2' },
+        ],
+      },
+
+      /* ============================================================
+         🆕 第 5 款：新游戏模板
+         把下面每一行的「文字」和「图片路径」换成你自己的即可。
+         图片放在 D:\My-site\images\ 里，路径一律用正斜杠 / 。
+         想再加第 6、第 7 款：整块复制这个 { ... } 到下面，改掉内容，
+         转盘角度、圆点数量、顶部计数全部自动适配，不用动别的代码。
+         ============================================================ */
+      {
+        title: '影之刃零',                 // 盒面上的大标题
+        tagline: '功夫朋克，暗黑美学',      // 标题下面那行小字
+        tag: '武侠与朋克的激烈碰撞',              // 开盒后右页右上角的彩色小标签
+        desc: '难度简单动作帅气，就算没有精湛的操作也能打出帅气连段，成就感很高。',
+        accent: '#a855f7',                 // 主题色（十六进制），影响标签与光晕
+        icon: '🎮',                        // 盒面 emoji 徽章
+        cover: 'images/零/零-封面1.jpg',      // 盒面图　推荐 3:4，900×1200
+        disc:  'images/零/零-盘.jpg',      // 光盘面图 推荐 1:1，800×800
+        inside:'images/零/零-封面2.jpg',      // 内页横幅 推荐 3.36:1，1200×360
+        stats: [                           // 右页三格小资料，可增删
+          { k: '入坑年份', v: '2026' },
+          { k: '最推荐', v: '不可多得的武侠游戏' },
+          { k: '最喜欢的角色', v: '魂' },
+        ],
+        photos: [                          // 照片履带；继续加 { src, caption } 就多一格，数量不限
+          { src: 'images/零/零-1.jpg', caption: '《新游戏》截图 1' },
+          { src: 'images/零/零-2.jpg', caption: '《新游戏》截图 2' },
+          { src: 'images/零/零-3.jpg', caption: '《新游戏》截图 3' },
+          { src: 'images/零/零-4.jpg', caption: '《新游戏》截图 4' },
+          { src: 'images/零/零-5.jpg', caption: '《新游戏》截图 5' },
+          { src: 'images/零/零-6.jpg', caption: '《新游戏》截图 6' },
+          { src: 'images/零/零-7.jpg', caption: '《新游戏》截图 7' },
+          { src: 'images/零/零-8.jpg', caption: '《新游戏》截图 8' },
+          { src: 'images/零/零-9.jpg', caption: '《新游戏》截图 9' },
+          { src: 'images/零/零-10.jpg', caption: '《新游戏》截图10' },
         ],
       },
     ];
@@ -672,7 +731,28 @@
     const stage = document.getElementById('stage');
     const dotsBox = document.getElementById('dots');
 
+    /* 每款游戏的「可浏览照片」= 封面 + 光盘面 + 内页横幅 + photos 数组，
+       按 src 去重（不少游戏拿同一张图同时当封面和截图）。
+       履带与灯箱共用这份列表：往 photos 里加几张，两处自动同步多几张。 */
+    function galleryOf(g) {
+      const seen = new Set(), out = [];
+      const add = (src, caption, tag) => {
+        if (!src || seen.has(src)) return;
+        seen.add(src); out.push({ src, caption, tag });
+      };
+      add(g.cover,  `${g.title} · 盒面`,     '封面');
+      add(g.disc,   `${g.title} · 光盘面`,   '光盘');
+      add(g.inside, `${g.title} · 内页横幅`, '横幅');
+      g.photos.forEach((p, i) => add(p.src, p.caption, `截图 ${i + 1}`));
+      return out;
+    }
+
     const N = GAMES.length;
+    /* 顶部三个统计徽章全部由 GAMES 自动算，以后增删游戏不用改 HTML：
+       款数 = 数组长度；照片数 = 各游戏可浏览图之和；光盘数 = 每款一张 */
+    document.getElementById('gameCount').textContent = N;
+    document.getElementById('shotCount').textContent = GAMES.reduce((n, g) => n + galleryOf(g).length, 0);
+    document.getElementById('discCount').textContent = N;
     const STEP = 360 / N;
     let radius = 340;
     let angle = 0;
@@ -681,9 +761,11 @@
     function cardHTML(g, i) {
       const stats = g.stats.map(s => `
             <div class="gc-stat"><p class="k">${s.k}</p><p class="v">${s.v}</p></div>`).join('');
-      const thumbs = g.photos.map((p, pi) => `
-            <button class="thumb" data-photo="${pi}" aria-label="查看 ${g.title} 截图 ${pi + 1}">
+      const gallery = galleryOf(g);          // 履带与灯箱共用这份「可浏览照片」
+      const thumbs = gallery.map((p, pi) => `
+            <button class="thumb" data-photo="${pi}" aria-label="查看 ${p.caption}">
               <img src="${p.src}" alt="${p.caption}" loading="lazy">
+              <span class="thumb-tag">${p.tag}</span>
             </button>`).join('');
 
       return `
@@ -691,13 +773,16 @@
                  aria-label="${g.title}，点击打开光盘盒"
                  style="--accent:${g.accent}">
 
-          <!-- 盒壳：开盒后露出的盒子本体（内衬沿 + 中缝），两页是嵌在它里面的托盘 -->
-          <span class="case-floor" aria-hidden="true"></span>
-
           <!-- 盒底 = 右页：内页横幅 + 文字介绍 + 截图 -->
           <div class="case-base">
             <div class="page-inner">
-              <div class="inside-banner"><img src="${g.inside}" alt="${g.title} 内页图" loading="lazy"></div>
+              <div class="inside-banner">
+                <img src="${g.inside}" alt="${g.title} 内页图" loading="lazy">
+                <button class="banner-toggle" data-banner aria-expanded="false" aria-label="展开显示内页图全貌">
+                  <svg class="chev" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span class="bt-label">全图</span>
+                </button>
+              </div>
               <div class="page-body">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
                   <h3 class="text-base font-extrabold text-white">${g.title}</h3>
@@ -706,8 +791,12 @@
                 </div>
                 <p class="gc-desc mt-2">${g.desc}</p>
                 <div class="gc-stats">${stats}</div>
-                <p class="gc-photos-title mono">Screenshots · ${g.photos.length} 张</p>
-                <div class="thumbs">${thumbs}</div>
+                <p class="gc-photos-title mono">Screenshots · ${gallery.length} 张<span class="film-pos">1 / ${gallery.length}</span><span class="film-hint">← 拖动 / 滚轮 / 点箭头 →</span></p>
+                <div class="filmstrip">
+                  <button class="film-nav prev" data-film="-1" aria-label="上一组照片">‹</button>
+                  <div class="film-track" data-film-track>${thumbs}</div>
+                  <button class="film-nav next" data-film="1" aria-label="下一组照片">›</button>
+                </div>
                 <button class="gc-close" data-close="1">▲ 合上盒子</button>
               </div>
             </div>
@@ -733,9 +822,6 @@
               <p class="disc-hint mono">CLICK TO CLOSE · 点击合盒</p>
             </div>
           </div>
-
-          <!-- 盒脊：两页之间的连接处，开盒时才出现，让盒子看起来是「折开的」而不是两块板拼在一起 -->
-          <span class="case-hinge" aria-hidden="true"></span>
         </article>`;
     }
 
@@ -807,6 +893,97 @@
       if (b) goTo(Number(b.dataset.go));
     };
 
+    /* ---------- 4.5 页内交互：横幅展开全图 / 照片履带 ---------- */
+    /* 展开高度 = 容器宽 ÷ 原图宽高比，夹在 180~460px，避免把右页撑爆；
+       object-fit: contain 会在这个框里完整显示整张图（上下或左右留边）。 */
+    function fitBanner(b) {
+      const img = b.querySelector('img');
+      if (!img || !img.naturalWidth) return;
+      const h = b.clientWidth * img.naturalHeight / img.naturalWidth;
+      b.style.setProperty('--fullH', Math.round(Math.min(460, Math.max(180, h))) + 'px');
+    }
+
+    function toggleBanner(b) {
+      const opening = !b.classList.contains('expanded');
+      const img = b.querySelector('img');
+      if (opening) {
+        if (img.complete && img.naturalWidth) fitBanner(b);
+        else img.addEventListener('load', () => fitBanner(b), { once: true });
+      }
+      b.classList.toggle('expanded', opening);
+      const btn = b.querySelector('[data-banner]');
+      btn.setAttribute('aria-expanded', String(opening));
+      btn.querySelector('.bt-label').textContent = opening ? '收起' : '全图';
+      btn.setAttribute('aria-label', opening ? '收起内页图' : '展开显示内页图全貌');
+    }
+
+    /* 履带：更新「第几张 / 共几张」与两端箭头可用性 */
+    function paintFilm(track) {
+      const card = track.closest('.case-base');
+      if (!card) return;
+      const strip = track.closest('.filmstrip');
+      const n = track.querySelectorAll('.thumb').length;
+      const one = track.querySelector('.thumb');
+      const step = one ? one.offsetWidth + 9 : 141;
+      const at = Math.min(n, Math.max(1, Math.round(track.scrollLeft / step) + 1));
+      const pos = card.querySelector('.film-pos');
+      if (pos) pos.textContent = `${at} / ${n}`;
+      const max = Math.max(0, track.scrollWidth - track.clientWidth);
+      strip.querySelector('.film-nav.prev').disabled = track.scrollLeft <= 2;
+      strip.querySelector('.film-nav.next').disabled = track.scrollLeft >= max - 2;
+    }
+
+    cards.forEach(card => {
+      const track = card.querySelector('[data-film-track]');
+      track.addEventListener('scroll', () => paintFilm(track), { passive: true });
+      track.addEventListener('scrollend', () => paintFilm(track));   // 平滑滚动结束再兜一次底
+      const b = card.querySelector('.inside-banner');
+      b.querySelector('img').addEventListener('load', () => fitBanner(b), { once: true });
+    });
+    /* 右页宽度随开盒变化，履带可见格数也变 → 尺寸一变就重算页码与箭头 */
+    if (window.ResizeObserver) {
+      const filmRO = new ResizeObserver(es => es.forEach(en => paintFilm(en.target)));
+      cards.forEach(c => filmRO.observe(c.querySelector('[data-film-track]')));
+    }
+
+    /* 滚轮落在履带上时横移胶片；没溢出就放行，让右页正常上下滚 */
+    ring.addEventListener('wheel', e => {
+      const track = e.target.closest('[data-film-track]');
+      if (!track || track.scrollWidth <= track.clientWidth + 2) return;
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        track.scrollLeft += e.deltaY;
+        paintFilm(track);
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    /* 鼠标按住也能拖着履带走（触摸端浏览器原生横滑已经够用）。
+       注意：开盒时转盘的拖拽逻辑不生效，两者不会抢同一个 pointer。 */
+    let filmDrag = null;
+    ring.addEventListener('pointerdown', e => {
+      const track = e.target.closest('[data-film-track]');
+      if (!track || e.pointerType === 'touch') return;
+      filmDrag = { track, x: e.clientX, left: track.scrollLeft, moved: 0 };
+    });
+    ring.addEventListener('pointermove', e => {
+      if (!filmDrag) return;
+      const dx = e.clientX - filmDrag.x;
+      if (Math.abs(dx) < 3) return;
+      filmDrag.moved = dx;
+      filmDrag.track.scrollLeft = filmDrag.left - dx;
+      paintFilm(filmDrag.track);
+    });
+    const endFilmDrag = () => {
+      // 拖过就不要把松手那一下当成「点缩略图」，否则会误开灯箱
+      if (filmDrag && Math.abs(filmDrag.moved) >= 3) {
+        suppressClick = true;
+        setTimeout(() => { suppressClick = false; }, 0);
+      }
+      filmDrag = null;
+    };
+    ring.addEventListener('pointerup', endFilmDrag);
+    ring.addEventListener('pointercancel', endFilmDrag);
+
     /* ---------- 5. 开盒 / 合盒 ---------- */
     function openCard(i) {
       if (openIndex === i) return;
@@ -816,14 +993,34 @@
       cards[i].classList.add('open');
       layout();
       cards[i].querySelector('.page-inner').scrollTop = 0;
-      // 开盒后盒子变宽一倍，把它带到视野中央
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      /* 🔵 关键：滚动必须先于翻盖完成，且只滚动「刚好够」的距离。
+         原来用 scrollIntoView({behavior:'smooth',block:'center'})，
+         页面一边滑一边 3D 翻页，视觉上就是整幅画面被挤着往上跑。
+         现在在加 .open 之前一次性瞬时对齐，翻盖期间视口完全静止。 */
+      const openH = Math.min(600, innerHeight * .84) * (innerWidth <= 768 ? .933 : 1);
+      /* ring 是 0×0 的定位点，它的 top 就是整个转盘（也就是展开盒）的垂直中心 */
+      const center = ring.getBoundingClientRect().top;
+      const top = center - openH / 2, bottom = center + openH / 2;
+      let dy = 0;
+      if (bottom > innerHeight - 16) dy = bottom - (innerHeight - 16);
+      else if (top < 16) dy = top - 16;
+      if (dy) {
+        /* ⚠️ 必须临时关掉全局 scroll-behavior:smooth：本页 html 开了 smooth，
+           直接写 scrollTop 也会变成异步平滑滚动，那就又和翻盖重叠了。 */
+        const html = document.documentElement;
+        const prev = html.style.scrollBehavior;
+        html.style.scrollBehavior = 'auto';
+        window.scrollBy(0, dy);
+        html.style.scrollBehavior = prev;
       }
     }
 
     function closeCard() {
       if (openIndex === -1) return;
+      // 合盒时把展开的横幅收回，下次打开仍是默认横条
+      const expanded = cards[openIndex].querySelector('.inside-banner.expanded');
+      if (expanded) toggleBanner(expanded);
       cards[openIndex].classList.remove('open');
       openIndex = -1;
       stage.classList.remove('open');
@@ -832,6 +1029,27 @@
 
     ring.addEventListener('click', e => {
       if (suppressClick) return;          // 刚拖完转盘，忽略这次 click
+
+      // 右页顶部横幅：点下拉箭头展开看整张图，再点收起
+      const bannerBtn = e.target.closest('[data-banner]');
+      if (bannerBtn) { toggleBanner(bannerBtn.closest('.inside-banner')); return; }
+
+      // 照片履带：两枚箭头一次翻两格
+      const filmBtn = e.target.closest('[data-film]');
+      if (filmBtn) {
+        const track = filmBtn.parentElement.querySelector('[data-film-track]');
+        const one = track.querySelector('.thumb');
+        const step = one ? one.offsetWidth + 9 : 141;
+        const max = Math.max(0, track.scrollWidth - track.clientWidth);
+        const target = Math.max(0, Math.min(max, track.scrollLeft + Number(filmBtn.dataset.film) * step * 2));
+        // 明确滚到目标像素，别用 scrollBy：一次翻两格常常超过末尾，
+        // 配合 snap 会被吸回起点，看起来像「箭头点了没反应」。
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        track.scrollTo({ left: target, behavior: reduce ? 'instant' : 'smooth' });
+        setTimeout(() => paintFilm(track), 520);   // 平滑滚动结束后再校准页码与箭头
+        return;
+      }
+
       const thumb = e.target.closest('[data-photo]');
       if (thumb) { openLightbox(Number(thumb.dataset.photo)); return; }
       if (e.target.closest('[data-close]')) { closeCard(); return; }
@@ -851,6 +1069,8 @@
 
     ring.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
+      // 页内按钮（全图 / 履带箭头 / 缩略图 / 合盒）自己处理，别顺手把盒子开合了
+      if (e.target.closest('button')) return;
       const card = e.target.closest('.gc');
       if (!card) return;
       e.preventDefault();
@@ -921,8 +1141,8 @@
     let lbList = [], lbAt = 0;
 
     function openLightbox(i) {
-      const g = GAMES[openIndex];
-      lbList = g.photos; lbAt = i;
+      // 灯箱与履带共用同一份可浏览列表，左右翻能翻到封面 / 光盘 / 横幅 / 全部截图
+      lbList = galleryOf(GAMES[openIndex]); lbAt = i;
       lb.hidden = false;
       document.body.style.overflow = 'hidden';
       paintLightbox();
@@ -947,7 +1167,11 @@
 
     /* ---------- 9. 启动 ---------- */
     layout();
-    window.addEventListener('resize', layout);
+    window.addEventListener('resize', () => {
+      layout();
+      // 展开中的横幅按新宽度重算高度，避免窗口变化后图片又被裁掉
+      document.querySelectorAll('.inside-banner.expanded').forEach(fitBanner);
+    });
   </script>
 </body>
 </html>
